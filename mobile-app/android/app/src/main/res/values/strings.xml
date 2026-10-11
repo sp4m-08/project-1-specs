@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AIoT Assistive Suite</string>
+    <string name="title_activity_main">AIoT Assistive Suite</string>
+    <string name="package_name">com.aiot.assistivesuite</string>
+    <string name="custom_url_scheme">com.aiot.assistivesuite</string>
+</resources>

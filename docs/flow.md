@@ -1,0 +1,125 @@
+# Project Lifecycle & Change Log (`flow.md`)
+**AIoT-Based Tri-Wearable Assistive System with Cross-Device Fall Detection and Encrypted Telemetry**
+
+---
+
+## Project Metadata
+- **Project Name**: AIoT Assistive Suite (Smart Glasses, Smart Cane, Smart Band)
+- **Repository Location**: [`c:\Users\Saunok Roy\Documents\projects\final-year`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year)
+- **Primary Stack**: Node.js, Express, TypeScript, WebSocket (WSS), MQTT, AES-256-GCM Crypto, React Native Web, Capacitor Android, Recharts, Vite.
+- **Backend Port**: `4000`
+- **Frontend Port**: `3000`
+
+---
+
+## Lifecycle Log
+
+### [Prompt 1] - 2026-10-10 18:10 IST
+**User Request**: Establish MQTT topics for specs, cane, and band; build the pipeline with required encryption; build production-ready React Native app and dashboard.
+
+#### Actions & Changes Made:
+1. **Directory Structure Setup**:
+   - Created [`docs/`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/docs), [`server/`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server), and [`mobile-app/`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app).
+
+2. **MQTT Specification Documentation**:
+   - Created [`docs/MQTT_SPECIFICATION.md`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/docs/MQTT_SPECIFICATION.md):
+     - Defined MQTT topic hierarchy (`aiot/v1/specs/telemetry`, `aiot/v1/specs/vision`, `aiot/v1/cane/telemetry`, `aiot/v1/band/telemetry`, `aiot/v1/band/sos`, `aiot/v1/alerts/fall`, `aiot/v1/alerts/health`).
+     - Standardized AES-256-GCM envelope format: $P = \{ \text{dev\_id}, t_{\text{ts}}, cnt, \text{nonce}, \text{ciphertext}, \text{tag} \}$.
+     - Specified QoS rules (QoS 1 for fall/SOS/vision alerts, QoS 0 for high-frequency telemetry).
+
+3. **Backend Encryption & Pipeline Implementation (`server/`)**:
+   - [`server/package.json`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/package.json): Installed `express`, `cors`, `ws`, `mqtt`, `dotenv`, `tsx`, `typescript`.
+   - [`server/src/crypto/aesGcmEngine.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/src/crypto/aesGcmEngine.ts): Firmware AES-256-GCM encryptor/decryptor with monotonic replay counter check & 10s timestamp freshness verification.
+   - [`server/src/mqtt/topicCatalog.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/src/mqtt/topicCatalog.ts): Topic paths & QoS mappings.
+   - [`server/src/fusion/fallVerification.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/src/fusion/fallVerification.ts): Algorithm 2 cross-device fall fusion ($\Delta t = 3\text{s}$ dual agreement $\rightarrow$ High Confidence; single flag $\rightarrow$ 30s SOS countdown).
+   - [`server/src/mapping/spatial3dMapper.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/src/mapping/spatial3dMapper.ts): 3D obstacle mapper implementing $p = d [\cos\phi\cos\theta, \cos\phi\sin\theta, \sin\phi]^T$ over 59 cells.
+   - [`server/src/chatbot/auraAiAssistant.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/src/chatbot/auraAiAssistant.ts): Multi-modal natural-language AI assistant.
+   - [`server/src/simulator/hardwareSimulator.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/src/simulator/hardwareSimulator.ts): Hardware simulator generating encrypted MQTT telemetry for Specs, Cane, and Band.
+   - [`server/src/index.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/src/index.ts): Express REST + WebSocket pipeline server listening on Port 4000.
+
+4. **Production React Native Web Dashboard App (`mobile-app/`)**:
+   - [`mobile-app/vite.config.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/vite.config.ts): React Native Web alias configuration.
+   - [`mobile-app/src/index.css`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/index.css): Dark mode cyber-medical design system.
+   - [`mobile-app/src/types/telemetry.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/types/telemetry.ts): TypeScript telemetry models.
+   - [`HeaderBar.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/HeaderBar.tsx): Top header with live TLS & AES-256-GCM badges.
+   - [`WearablesGrid.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/WearablesGrid.tsx): Glasses, Cane, and Band status cards.
+   - [`VitalsTelemetryChart.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/VitalsTelemetryChart.tsx): Animated Heart Rate & $\text{SpO}_2$ sparkline trace.
+   - [`Spatial3dRadar.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/Spatial3dRadar.tsx): Interactive 59-cell 3D spatial radar visualizer.
+   - [`FallFusionMonitor.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/FallFusionMonitor.tsx): Algorithm 2 fall verification banner & 30s SOS countdown modal.
+   - [`SecurityPayloadInspector.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/SecurityPayloadInspector.tsx): AES-256-GCM header inspector & log terminal.
+   - [`AuraAiChatbotModal.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/AuraAiChatbotModal.tsx): Interactive AI chatbot thread matching Figure 13.
+   - [`SimulatorControlBar.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/SimulatorControlBar.tsx): Hardware simulator trigger buttons.
+   - [`BottomNavBar.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/BottomNavBar.tsx): Bottom tab navigation bar.
+   - [`App.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/App.tsx): Root container with WebSocket listener.
+
+5. **Verification & Summary**:
+   - Backend API status test confirmed live decrypted telemetry stream and 0ms AES-GCM verification latency.
+   - REST trigger test confirmed Algorithm 2 High-Confidence Fall Alert escalation ($F_{\text{cane}} \land F_{\text{band}}$).
+   - Created [`docs/PROJECT_SUMMARY.md`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/docs/PROJECT_SUMMARY.md).
+
+---
+
+### [Prompt 2] - 2026-10-10 18:28 IST
+**User Request**: Maintain a `flow.md` file to track the project lifecycle and log every prompt/change.
+
+---
+
+### [Prompt 3] - 2026-10-10 18:29 IST
+**User Request**: Clarification on which service/broker is being used for MQTT.
+
+---
+
+### [Prompt 4] - 2026-10-10 18:31 IST
+**User Request**: "i want to run this on hive mqtt"
+
+---
+
+### [Prompt 5] - 2026-10-10 18:40 IST
+**User Request**: "right now i do not have the hardware devices so this pipeline will be a simulation, later i will adjust the devices firmware code to this pipeline"
+
+---
+
+### [Prompt 6] - 2026-10-10 18:45 IST
+**User Request**: "okay now tell me how to run and test it"
+
+---
+
+### [Prompt 7] - 2026-10-10 18:51 IST
+**User Request**: "first tell me what credentials to fill where to get them, then tell me how to run it"
+
+---
+
+### [Prompt 8] - 2026-10-10 19:27 IST
+**User Request**: Notification that HiveMQ Cloud Serverless Free plan is retired for new accounts, and listing free alternatives (HiveMQ Public `broker.hivemq.com`, EMQX Cloud, Mosquitto Public `test.mosquitto.org`).
+
+---
+
+### [Prompt 9] - 2026-10-10 19:43 IST
+**User Request**: "okay now how to run the project? close it if its running already need to run it from scratch"
+
+---
+
+### [Prompt 10] - 2026-10-11 00:42 IST
+**User Request**: "how do i run this on my phone"
+
+---
+
+### [Prompt 11] - 2026-10-11 00:43 IST
+**User Request**: "i want to run it as an android app on my phone"
+
+---
+
+### [Prompt 12] - 2026-10-11 00:51 IST
+**User Request**: Handling Gradle SDK build requirement for native Android compilation.
+
+---
+
+### [Prompt 13] - 2026-10-11 01:01 IST
+**User Request**: User ran `.\gradlew.bat assembleDebug` and received `Directory does not exist` error for `sdk.dir`.
+
+#### Actions & Changes Made:
+1. **Identified Missing Android SDK**: Explained that `./gradlew.bat` requires Android Studio's SDK tools to be installed on Windows.
+2. **Provided Solutions**:
+   - **Solution 1 (PWA Installation - Instant)**: Open Chrome on Android $\rightarrow$ `http://192.168.1.214:3000/` $\rightarrow$ "Add to Home Screen" (Installs instant full-screen app icon).
+   - **Solution 2 (Android Studio Setup)**: Download Android Studio to provide local Gradle SDK compilation.
+3. Updated [`flow.md`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/flow.md) and [`docs/flow.md`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/docs/flow.md).
