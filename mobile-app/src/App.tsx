@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { HeaderBar } from './components/HeaderBar';
-import { WearablesGrid } from './components/WearablesGrid';
-import { VitalsTelemetryChart } from './components/VitalsTelemetryChart';
+import { Mic, Layers, ShieldCheck, Settings, Radio } from 'lucide-react';
+import { DashboardScreen } from './components/DashboardScreen';
 import { Spatial3dRadar } from './components/Spatial3dRadar';
-import { FallFusionMonitor } from './components/FallFusionMonitor';
 import { SecurityPayloadInspector } from './components/SecurityPayloadInspector';
-import { AuraAiChatbotModal } from './components/AuraAiChatbotModal';
-import { SimulatorControlBar } from './components/SimulatorControlBar';
+import { AIChatDrawer } from './components/AIChatDrawer';
 import { BottomNavBar, ActiveTab } from './components/BottomNavBar';
 import {
   SpecsTelemetry,
@@ -19,12 +16,17 @@ import {
   ChatMessage,
 } from './types/telemetry';
 
+/**
+ * App — Production Root Component for Secure AIoT Assistive Wearables Console
+ * Theme: "Obsidian Glass" (Deep Obsidian Canvas #132322, Neon Pulse #3ddc91 accent)
+ * Orchestrates live MQTT/AES-GCM data stream from Smart Glasses, Smart Cane, and Smart Band.
+ */
 export const App: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  // Live Telemetry States
+  // Live Wearable Telemetry Feeds
   const [specs, setSpecs] = useState<SpecsTelemetry | undefined>();
   const [specsVision, setSpecsVision] = useState<SpecsVision | undefined>();
   const [cane, setCane] = useState<CaneTelemetry | undefined>();
@@ -34,39 +36,43 @@ export const App: React.FC = () => {
   const [securityLogs, setSecurityLogs] = useState<DecryptionLog[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
+  // Server Host Configurator (Defaults to localhost, allows LAN Wi-Fi IP for mobile)
   const [serverHost, setServerHost] = useState<string>(() => {
     return (
       localStorage.getItem('AIOT_SERVER_HOST') ||
-      (window.location.hostname && window.location.hostname !== 'localhost' ? window.location.hostname : 'localhost')
+      (window.location.hostname && window.location.hostname !== 'localhost'
+        ? window.location.hostname
+        : 'localhost')
     );
   });
 
   const apiBase = `http://${serverHost}:4000`;
 
-  // Establish WebSocket Connection to Backend Server
+  // Establish WebSocket Telemetry Pipeline to Secure Bridge
   useEffect(() => {
     const wsUrl = `ws://${serverHost}:4000`;
     let socket: WebSocket;
+
     try {
       socket = new WebSocket(wsUrl);
     } catch (err) {
-      console.error('WebSocket init error:', err);
+      console.error('[WebSocket Init Error]:', err);
       setIsConnected(false);
       return;
     }
 
     socket.onopen = () => {
-      console.log('[WSS Connected to Backend Pipeline]');
+      console.log('[Bridge Connected]: WebSocket Telemetry Pipeline active at', wsUrl);
       setIsConnected(true);
     };
 
     socket.onclose = () => {
-      console.log('[WSS Disconnected]');
+      console.log('[Bridge Disconnected]: Reconnecting telemetry stream...');
       setIsConnected(false);
     };
 
     socket.onerror = (e) => {
-      console.error('[WSS Error]', e);
+      console.error('[Bridge Socket Error]:', e);
       setIsConnected(false);
     };
 
@@ -118,7 +124,7 @@ export const App: React.FC = () => {
             break;
         }
       } catch (err) {
-        console.error('WSS parse error:', err);
+        console.error('[WSS Parsing Error]:', err);
       }
     };
 
@@ -127,20 +133,23 @@ export const App: React.FC = () => {
     };
   }, [serverHost]);
 
-  // Server Host Configurator
+  // Host IP Configuration Dialog
   const handleConfigureServer = () => {
     const next = window.prompt(
-      'Configure AIoT Server Host:\n\n• For USB debugging with adb reverse, keep "localhost"\n• For Wi-Fi debugging, enter PC local IP (e.g. 192.168.1.15):',
+      'Configure Secure AIoT Bridge Host:\n\n• For laptop/local development or USB adb reverse, enter "localhost"\n• For phone on Wi-Fi, enter laptop local IP (e.g. 192.168.1.15):',
       serverHost
     );
     if (next && next.trim()) {
-      const clean = next.trim().replace(/^http:\/\/|^https:\/\/|^ws:\/\//, '').replace(/:[0-9]+$/, '');
+      const clean = next
+        .trim()
+        .replace(/^http:\/\/|^https:\/\/|^ws:\/\//, '')
+        .replace(/:[0-9]+$/, '');
       localStorage.setItem('AIOT_SERVER_HOST', clean);
       setServerHost(clean);
     }
   };
 
-  // REST Simulator Trigger Handler
+  // REST Trigger for Hardware Simulator
   const handleTriggerAction = async (action: string, value?: any) => {
     try {
       await fetch(`${apiBase}/api/simulator/trigger`, {
@@ -149,11 +158,11 @@ export const App: React.FC = () => {
         body: JSON.stringify({ action, value }),
       });
     } catch (err) {
-      console.error('Simulator trigger error:', err);
+      console.error('[Simulator Trigger Error]:', err);
     }
   };
 
-  // REST Chatbot Handler
+  // REST Query for AI Chat Assistant
   const handleSendChatMessage = async (prompt: string) => {
     const tempUserMsg: ChatMessage = {
       id: `temp_${Date.now()}`,
@@ -172,136 +181,121 @@ export const App: React.FC = () => {
       const assistantMsg = await res.json();
       setChatMessages((prev) => [...prev, assistantMsg]);
     } catch (err) {
-      console.error('Chatbot query error:', err);
+      console.error('[AI Chatbot Query Error]:', err);
     }
   };
 
-  const currentHr = band?.heart_rate || cane?.heart_rate || 72;
-  const currentSpO2 = band?.spo2 || cane?.spo2 || 98;
-
   return (
-    <div style={styles.appContainer}>
-      {/* Top Header & Announcement Bar */}
-      <HeaderBar
-        isConnected={isConnected}
-        activeAlertCount={activeAlert && activeAlert.status !== 'IDLE' ? 1 : 0}
-        serverHost={serverHost}
-        onConfigureServer={handleConfigureServer}
-        onOpenChat={() => setIsChatOpen(true)}
-        onTriggerSos={() => handleTriggerAction('SOS_PRESS')}
-      />
-
-      <main style={styles.mainScrollable}>
-        {/* Sauce Labs Stat Block Row (Floats on #132322 background) */}
-        <section style={styles.statBlockSection}>
-          <div style={styles.statColumn}>
-            <span style={styles.statNumber}>50 Hz</span>
-            <span style={styles.statLabel}>TELEMETRY STREAM RATE</span>
-          </div>
-          <div style={styles.statColumn}>
-            <span style={styles.statNumber}>256-BIT</span>
-            <span style={styles.statLabel}>AES-GCM HARDWARE ENCRYPTION</span>
-          </div>
-          <div style={styles.statColumn}>
-            <span style={styles.statNumber}>3.0s</span>
-            <span style={styles.statLabel}>ALGORITHM 2 FUSION WINDOW</span>
-          </div>
-          <div style={styles.statColumn}>
-            <span style={styles.statNumber}>&lt; 2.1ms</span>
-            <span style={styles.statLabel}>BROKER TRANSIT LATENCY</span>
-          </div>
-        </section>
-
-        {/* Tab 1: Dashboard View */}
+    <div style={styles.appShell}>
+      {/* Scrollable View Area */}
+      <main style={styles.contentViewport}>
+        {/* TAB 1: Main Telemetry Dashboard */}
         {activeTab === 'dashboard' && (
-          <>
-            {/* Tri-Wearable Module Grid */}
-            <WearablesGrid
-              specs={specs}
-              specsVision={specsVision}
-              cane={cane}
-              band={band}
-            />
-
-            {/* Signature Sauce Labs Mint Frost Light Card: Algorithm 2 Fall Verification */}
-            <FallFusionMonitor
-              activeAlert={activeAlert}
-              onCancelAlert={() => handleTriggerAction('SOS_CANCEL')}
-            />
-
-            {/* Live Biometric Area Chart */}
-            <VitalsTelemetryChart
-              currentHr={currentHr}
-              currentSpO2={currentSpO2}
-            />
-
-            {/* Embedded Hardware Simulator Bar */}
-            <SimulatorControlBar onTriggerAction={handleTriggerAction} />
-          </>
-        )}
-
-        {/* Tab 2: 3D Spatial Radar View */}
-        {activeTab === 'spatial' && (
-          <Spatial3dRadar
-            pointCloud={pointCloud}
-            pitchDeg={specs?.pitch_deg}
-            yawDeg={specs?.yaw_deg}
+          <DashboardScreen
+            isConnected={isConnected}
+            serverHost={serverHost}
+            onConfigureServer={handleConfigureServer}
+            specs={specs}
+            specsVision={specsVision}
+            cane={cane}
+            band={band}
+            activeAlert={activeAlert}
+            onCancelAlert={() => handleTriggerAction('SOS_CANCEL')}
+            onTriggerAction={handleTriggerAction}
+            onOpenChat={() => setIsChatOpen(true)}
           />
         )}
 
-        {/* Tab 3: AES-256-GCM Security Inspector View */}
-        {activeTab === 'security' && (
-          <SecurityPayloadInspector logs={securityLogs} />
+        {/* TAB 2: 3D Spatial Radar Perception */}
+        {activeTab === 'spatial' && (
+          <div style={styles.subviewPadding}>
+            <div style={styles.subviewHeader}>
+              <span className="eyebrow-label">SPATIAL TOPOLOGY RADAR</span>
+              <h2 style={styles.subviewTitle}>3D Ultrasonic Obstacle Map</h2>
+            </div>
+            <Spatial3dRadar
+              pointCloud={pointCloud}
+              pitchDeg={specs?.pitch_deg}
+              yawDeg={specs?.yaw_deg}
+            />
+          </div>
         )}
 
-        {/* Tab 4: Config & Caregiver View */}
-        {activeTab === 'settings' && (
-          <section style={styles.settingsSection}>
-            <div className="deep-abyss-card" style={styles.settingsCard}>
-              <span className="eyebrow-label">SYSTEM CONFIGURATION</span>
-              <h3 style={styles.settingsHeading}>Command Center Settings</h3>
+        {/* TAB 3: AES-256-GCM Firmware Security Inspector */}
+        {activeTab === 'security' && (
+          <div style={styles.subviewPadding}>
+            <div style={styles.subviewHeader}>
+              <span className="eyebrow-label">CRYPTOGRAPHIC ATTESTATION</span>
+              <h2 style={styles.subviewTitle}>AES-256-GCM Pipeline Inspector</h2>
+            </div>
+            <SecurityPayloadInspector logs={securityLogs} />
+          </div>
+        )}
 
+        {/* TAB 4: Console Settings & Caregiver Configuration */}
+        {activeTab === 'settings' && (
+          <div style={styles.subviewPadding}>
+            <div style={styles.subviewHeader}>
+              <span className="eyebrow-label">ENGINEERING CONSOLE</span>
+              <h2 style={styles.subviewTitle}>System & Caregiver Configuration</h2>
+            </div>
+
+            <div style={styles.settingsCard}>
               <div style={styles.settingsRow}>
                 <div>
-                  <span style={styles.settingTitle}>Backend Host Endpoint</span>
-                  <span style={styles.settingDesc}>Current: ws://{serverHost}:4000</span>
+                  <span style={styles.settingLabel}>Bridge Endpoint Target</span>
+                  <span style={styles.settingSub}>ws://{serverHost}:4000</span>
                 </div>
-                <button onClick={handleConfigureServer} className="pill-btn-primary" style={styles.settingBtn}>
-                  Change IP
+                <button
+                  onClick={handleConfigureServer}
+                  className="pill-btn-primary"
+                  style={styles.settingActionPill}
+                >
+                  Configure Host
                 </button>
               </div>
 
               <div style={styles.settingsRow}>
                 <div>
-                  <span style={styles.settingTitle}>MQTT HiveMQ Public Broker</span>
-                  <span style={styles.settingDesc}>broker.hivemq.com:1883 (Active TLS)</span>
+                  <span style={styles.settingLabel}>MQTT Public Broker</span>
+                  <span style={styles.settingSub}>broker.hivemq.com:1883 (AES-256-GCM QoS 1/0)</span>
                 </div>
-                <span style={styles.statusOkPill}>Connected</span>
+                <span style={styles.statusPill}>TLS Active</span>
               </div>
 
               <div style={styles.settingsRow}>
                 <div>
-                  <span style={styles.settingTitle}>Emergency Contacts (SOS Dispatch)</span>
-                  <span style={styles.settingDesc}>Caregiver Primary: +91-98765-43210</span>
+                  <span style={styles.settingLabel}>Primary Caregiver Emergency Contact</span>
+                  <span style={styles.settingSub}>Dr. R. Sharma: +91-98765-43210</span>
                 </div>
                 <button
-                  onClick={() => alert('Emergency dispatch contacts verified active.')}
+                  onClick={() => alert('Emergency dispatch contact verified with live network.')}
                   className="pill-btn-ghost"
-                  style={styles.settingBtn}
+                  style={styles.settingActionPill}
                 >
-                  Verify Contacts
+                  Verify Dispatch
                 </button>
               </div>
             </div>
-          </section>
+          </div>
         )}
       </main>
 
-      {/* Sauce Labs Tab Pill Navigation */}
+      {/* Floating Microphone Action Button (Neon Pulse #3ddc91) */}
+      <button
+        onClick={() => setIsChatOpen(true)}
+        style={styles.floatingMicButton}
+        className="live-pulse-green"
+        title="Open Aura AI Voice & Sensor Fusion Assistant"
+      >
+        <Mic size={24} color="#132322" />
+      </button>
+
+      {/* Bottom Tab Pill Navigation */}
       <BottomNavBar activeTab={activeTab} onChangeTab={setActiveTab} />
 
-      {/* Aura AI Chatbot Modal */}
-      <AuraAiChatbotModal
+      {/* Voice-Enabled AI Chatbot & Sensor Fusion Modal Drawer */}
+      <AIChatDrawer
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         messages={chatMessages}
@@ -312,61 +306,40 @@ export const App: React.FC = () => {
 };
 
 const styles = {
-  appContainer: {
+  appShell: {
     display: 'flex',
     flexDirection: 'column' as const,
     minHeight: '100vh',
-    backgroundColor: '#132322',
+    backgroundColor: '#132322', // Obsidian Canvas
     color: '#FFFFFF',
+    position: 'relative' as const,
   },
-  mainScrollable: {
+  contentViewport: {
     flex: 1,
     overflowY: 'auto' as const,
-    paddingBottom: '20px',
+    paddingBottom: '80px',
   },
-  statBlockSection: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-    gap: '16px',
+  subviewPadding: {
     padding: '24px 20px',
   },
-  statColumn: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '2px',
+  subviewHeader: {
+    marginBottom: '20px',
   },
-  statNumber: {
-    fontSize: '32px',
+  subviewTitle: {
+    fontSize: '22px',
     fontWeight: '500',
-    color: '#3DDC91',
+    color: '#FFFFFF',
     letterSpacing: '-0.08px',
-    lineHeight: '1.1',
-  },
-  statLabel: {
-    fontSize: '9px',
-    fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.5)',
-    letterSpacing: '0.45px',
-    textTransform: 'uppercase' as const,
-  },
-  settingsSection: {
-    padding: '0 20px 24px 20px',
+    margin: '4px 0 0 0',
   },
   settingsCard: {
     backgroundColor: '#0E1A19',
-    borderRadius: '20px',
+    borderRadius: '24px',
     padding: '24px',
     border: '1px solid rgba(255, 255, 255, 0.08)',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '18px',
-  },
-  settingsHeading: {
-    fontSize: '20px',
-    fontWeight: '500',
-    color: '#FFFFFF',
-    letterSpacing: '-0.08px',
-    margin: 0,
   },
   settingsRow: {
     display: 'flex',
@@ -376,30 +349,48 @@ const styles = {
     padding: '12px 0',
     borderTop: '1px solid rgba(255, 255, 255, 0.06)',
     flexWrap: 'wrap' as const,
-    gap: '10px',
+    gap: '12px',
   },
-  settingTitle: {
+  settingLabel: {
     fontSize: '14px',
     fontWeight: '500',
     color: '#FFFFFF',
     display: 'block',
   },
-  settingDesc: {
+  settingSub: {
     fontSize: '12px',
     color: '#828786',
     display: 'block',
+    marginTop: '2px',
   },
-  settingBtn: {
-    padding: '6px 16px',
+  settingActionPill: {
+    padding: '8px 18px',
     fontSize: '12px',
     borderRadius: '56px',
   },
-  statusOkPill: {
+  statusPill: {
     backgroundColor: 'rgba(61, 220, 145, 0.15)',
     color: '#3DDC91',
     borderRadius: '56px',
-    padding: '4px 12px',
+    padding: '5px 14px',
     fontSize: '11px',
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  floatingMicButton: {
+    position: 'fixed' as const,
+    bottom: '76px',
+    right: '24px',
+    width: '58px',
+    height: '58px',
+    borderRadius: '50%',
+    backgroundColor: '#3DDC91', // Neon Pulse
+    border: 'none',
+    boxShadow: '0 8px 24px rgba(61, 220, 145, 0.45)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    zIndex: 250,
+    transition: 'transform 0.15s ease',
   },
 };

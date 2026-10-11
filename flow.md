@@ -123,3 +123,89 @@
    - **Solution 1 (PWA Installation - Instant)**: Open Chrome on Android $\rightarrow$ `http://192.168.1.214:3000/` $\rightarrow$ "Add to Home Screen" (Installs instant full-screen app icon).
    - **Solution 2 (Android Studio Setup)**: Download Android Studio to provide local Gradle SDK compilation.
 3. Updated [`flow.md`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/flow.md) and [`docs/flow.md`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/docs/flow.md).
+
+---
+
+### [Prompt 14] - 2026-10-11 15:11 IST
+**User Request**: Push project to GitHub (`https://github.com/sp4m-08/project-1-specs.git`).
+
+#### Actions & Changes Made:
+1. Created project-wide [`.gitignore`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/.gitignore) to protect credentials (`.env`), ignore build artifacts (`dist/`, `.gradle/`, `local.properties`), and exclude dependencies (`node_modules/`).
+2. Initialized Git repository, renamed branch to `main`, committed initial code base, added remote `origin`, and pushed upstream.
+
+---
+
+### [Prompt 15] - 2026-10-11 15:15 IST
+**User Request**: How to run this project as an Android app on physical phone using Android Studio.
+
+#### Actions & Changes Made:
+1. Added `android:usesCleartextTraffic="true"` to [`AndroidManifest.xml`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/android/app/src/main/AndroidManifest.xml) to permit local HTTP & WebSocket telemetry.
+2. Added configurable host state to [`App.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/App.tsx) and [`HeaderBar.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/HeaderBar.tsx) for ADB reverse (`localhost`) and Wi-Fi (`192.168.x.x`).
+3. Added [`tsconfig.json`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/tsconfig.json) to `mobile-app` and fixed TypeScript types.
+4. Synced web assets with `npx cap sync`.
+
+---
+
+### [Prompt 16] - 2026-10-11 15:25 IST
+**User Request**: "i want to open it as an apk not locally".
+
+#### Actions & Changes Made:
+1. Configured Gradle build to use Android Studio's bundled JDK 21+ (`C:\Program Files\Android\Android Studio\jbr`).
+2. Executed `gradlew assembleDebug` to produce standalone APK.
+3. Placed [`AIoT-Assistive-Suite-debug.apk`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/AIoT-Assistive-Suite-debug.apk) directly at the project root for 1-click install via ADB or direct transfer.
+
+---
+
+### [Prompt 17] - 2026-10-11 20:38 IST
+**User Request**: Change UI/UX based on Sauce Labs "Obsidian Glass" command center style reference and rebuild APK.
+
+#### Actions & Changes Made:
+1. Applied Sauce Labs design tokens in [`index.css`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/index.css) (`#132322`, `#0E1A19`, `#EDF7F5`, `#3DDC91`, `#FFCD48`, 56px pills, 60px large cards, 20px nested cards).
+2. Redesigned all components with luminance rhythm and pill language.
+3. Rebuilt and updated APK at project root.
+
+---
+
+### [Prompt 18] - 2026-10-11 22:37 IST
+**User Request**: How to run it locally on laptop.
+
+#### Actions & Changes Made:
+1. Verified `npm run dev` in `server` (Port 4000) and `mobile-app` (Port 3000).
+2. Provided step-by-step local execution instructions.
+
+---
+
+### [Prompt 19] - 2026-10-11 22:44 IST
+**User Request**: Scrap the complete current design of the app, build the UI/UX based off of the comprehensive React Native / Obsidian Glass engineering console specification, and log changes to `flow.md`.
+
+#### Actions & Changes Made:
+1. **Design System & Tokens ("Obsidian Glass")**:
+   - Obsidian Canvas (`#132322`), Deep Abyss (`#0E1A19`), Mint Frost (`#EDF7F5`), Pure White (`#FFFFFF`), Neon Pulse (`#3DDC91`), Signal Yellow (`#FFCD48`), Slate Text (`#828786`).
+   - 56px pill buttons & tab pills, 60px large cards, 20px nested cards, 9px tracked-out uppercase eyebrows (`0.05em`).
+   - Luminance rhythm alternating between dark bands (`#132322`) and light content cards (`#EDF7F5`).
+2. **Main Telemetry Dashboard & Header (`DashboardScreen.tsx`)**:
+   - App title `"AURA AIoT ASSISTANT"` with live `"Bridge: Connected"` status badge in Neon Pulse (`#3DDC91`).
+   - 4-column floating telemetry statistics bar (`50 Hz`, `256-BIT`, `3.0s`, `< 2.1ms`).
+3. **Connected Devices Row (`DeviceStatusGrid.tsx`)**:
+   - 3 modular hardware tiles with `60px` border-radius on `#0E1A19` Deep Abyss background:
+     1. *Smart Glasses (ESP32-CAM)*: Status, YOLO Vision active, obstacle detected clearance distance.
+     2. *Smart Cane (ESP8266)*: Ground ultrasonic proximity, active scanning, buzzer trigger indicator.
+     3. *Smart Band (ESP8266)*: Patient status (Stable/Normal, Warning, Critical), BMP280 altitude, motion steps.
+4. **Live Vitals Panel (`VitalsCard.tsx`)**:
+   - Light Content Card in Mint Frost (`#EDF7F5`) with `60px` border-radius.
+   - Large Heart Rate display (`BPM`) with clinical status thresholds (Normal: 60-100, Warning: 50-60 or 100-120, Critical: <50 or >120).
+   - Blood Oxygen ($\text{SpO}_2$) display with clinical threshold badges.
+   - Environmental BMP280 temperature, pressure, and altitude telemetry.
+   - Real-time sparkline trace.
+5. **Two-Tier Fall-Verification & Emergency Alert Modal (`FallAlertModal.tsx`)**:
+   - *Tier 1 (Single Device Trigger, $F=1$)*: Low-confidence warning with a 30-second circular countdown ($T_{\text{resp}} = 30\text{s}$) and "Cancel False Alarm" pill action.
+   - *Tier 2 (Dual Device Trigger, $|t_c - t_b| \le \Delta t = 3.0\text{s}$)*: Critical high-confidence alert escalated immediately to caregivers with emergency telephony dispatch banner and GPS coordinates.
+6. **Voice-Enabled AI Chatbot & Sensor Fusion Drawer (`AIChatDrawer.tsx`)**:
+   - Bottom floating microphone action button in Neon Pulse (`#3DDC91`).
+   - Natural language conversational assistant answering clinical queries (*"How was my father's heart rate over the last hour?"*).
+   - Multi-modal response cards containing 1-hour heart rate trend chart, live status, and contextual event correlation links (e.g. correlating HR spike with cane obstacle detection).
+7. **Production Build & Native APK**:
+   - Compiled web bundle via `npm run build`.
+   - Synced native Capacitor assets via `npx cap sync`.
+   - Reassembled updated Android APK via `gradlew assembleDebug` with Android Studio JDK 21.
+   - Refreshed [`AIoT-Assistive-Suite-debug.apk`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/AIoT-Assistive-Suite-debug.apk) (4.50 MB) at the project root.
