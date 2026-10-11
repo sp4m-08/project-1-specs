@@ -1,13 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { ShieldCheck, Radio, AlertTriangle, Bot, Cpu } from 'lucide-react-react-native-web';
-
-// Note: Using lucide-react icons directly with HTML fallback for React Native Web
-import { ShieldCheck as ShieldIcon, Radio as RadioIcon, AlertOctagon, Bot as BotIcon, Zap } from 'lucide-react';
+import { ShieldCheck as ShieldIcon, AlertOctagon, Bot as BotIcon, Zap } from 'lucide-react';
 
 interface HeaderBarProps {
   isConnected: boolean;
   activeAlertCount: number;
+  serverHost?: string;
+  onConfigureServer?: () => void;
   onOpenChat: () => void;
   onTriggerSos: () => void;
 }
@@ -15,6 +13,8 @@ interface HeaderBarProps {
 export const HeaderBar: React.FC<HeaderBarProps> = ({
   isConnected,
   activeAlertCount,
+  serverHost = 'localhost',
+  onConfigureServer,
   onOpenChat,
   onTriggerSos,
 }) => {
@@ -23,10 +23,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       <div style={styles.leftSection}>
         <div style={styles.titleRow}>
           <Zap size={22} color="#00F2FE" />
-          <Text style={styles.appTitle}>Secure AIoT Assistive Suite</Text>
+          <span style={styles.appTitle}>Secure AIoT Assistive Suite</span>
         </div>
         <div style={styles.badgeRow}>
-          <div style={styles.statusBadge}>
+          <div
+            style={{ ...styles.statusBadge, cursor: onConfigureServer ? 'pointer' : 'default' }}
+            onClick={onConfigureServer}
+            title={`Server: ${serverHost}:4000 (Click to change IP)`}
+          >
             <div
               style={{
                 width: 8,
@@ -37,14 +41,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               }}
               className={isConnected ? 'pulse-emerald' : ''}
             />
-            <Text style={styles.statusText}>
-              Broker: {isConnected ? 'Connected (TLS)' : 'Disconnected'}
-            </Text>
+            <span style={styles.statusText}>
+              {isConnected ? `Connected (${serverHost})` : `Offline (${serverHost})`}
+            </span>
           </div>
 
           <div style={styles.securityBadge}>
             <ShieldIcon size={13} color="#00F2FE" style={{ marginRight: 4 }} />
-            <Text style={styles.securityText}>AES-256-GCM Payload Active</Text>
+            <span style={styles.securityText}>AES-256-GCM Payload Active</span>
           </div>
         </div>
       </div>

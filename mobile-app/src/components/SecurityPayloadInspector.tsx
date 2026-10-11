@@ -63,7 +63,7 @@ export const SecurityPayloadInspector: React.FC<SecurityPayloadInspectorProps> =
           {logs.slice(0, 8).map((log, idx) => (
             <div key={idx} style={styles.logItem}>
               <span style={styles.logTime}>
-                {new Date(log.tts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 })}
+                {new Date(log.tts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any)}
               </span>
               <span style={{
                 ...styles.logTag,

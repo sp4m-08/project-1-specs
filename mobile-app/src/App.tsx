@@ -34,10 +34,26 @@ export const App: React.FC = () => {
   const [securityLogs, setSecurityLogs] = useState<DecryptionLog[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
+  const [serverHost, setServerHost] = useState<string>(() => {
+    return (
+      localStorage.getItem('AIOT_SERVER_HOST') ||
+      (window.location.hostname && window.location.hostname !== 'localhost' ? window.location.hostname : 'localhost')
+    );
+  });
+
+  const apiBase = `http://${serverHost}:4000`;
+
   // Establish WebSocket Connection to Backend Server
   useEffect(() => {
-    const wsUrl = `ws://${window.location.hostname || 'localhost'}:4000`;
-    const socket = new WebSocket(wsUrl);
+    const wsUrl = `ws://${serverHost}:4000`;
+    let socket: WebSocket;
+    try {
+      socket = new WebSocket(wsUrl);
+    } catch (err) {
+      console.error('WebSocket init error:', err);
+      setIsConnected(false);
+      return;
+    }
 
     socket.onopen = () => {
       console.log('[WSS Connected to Backend Pipeline]');
@@ -46,6 +62,11 @@ export const App: React.FC = () => {
 
     socket.onclose = () => {
       console.log('[WSS Disconnected]');
+      setIsConnected(false);
+    };
+
+    socket.onerror = (e) => {
+      console.error('[WSS Error]', e);
       setIsConnected(false);
     };
 
@@ -104,12 +125,25 @@ export const App: React.FC = () => {
     return () => {
       socket.close();
     };
-  }, []);
+  }, [serverHost]);
+
+  // Server Host Configurator
+  const handleConfigureServer = () => {
+    const next = window.prompt(
+      'Configure AIoT Server Host:\n\n• For USB debugging with adb reverse, keep "localhost"\n• For Wi-Fi debugging, enter PC local IP (e.g. 192.168.1.15):',
+      serverHost
+    );
+    if (next && next.trim()) {
+      const clean = next.trim().replace(/^http:\/\/|^https:\/\/|^ws:\/\//, '').replace(/:[0-9]+$/, '');
+      localStorage.setItem('AIOT_SERVER_HOST', clean);
+      setServerHost(clean);
+    }
+  };
 
   // REST Simulator Trigger Handler
   const handleTriggerAction = async (action: string, value?: any) => {
     try {
-      await fetch('/api/simulator/trigger', {
+      await fetch(`${apiBase}/api/simulator/trigger`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, value }),
@@ -130,7 +164,7 @@ export const App: React.FC = () => {
     setChatMessages((prev) => [...prev, tempUserMsg]);
 
     try {
-      const res = await fetch('/api/chatbot/query', {
+      const res = await fetch(`${apiBase}/api/chatbot/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
@@ -148,6 +182,8 @@ export const App: React.FC = () => {
       <HeaderBar
         isConnected={isConnected}
         activeAlertCount={activeAlert && activeAlert.status !== 'IDLE' ? 1 : 0}
+        serverHost={serverHost}
+        onConfigureServer={handleConfigureServer}
         onOpenChat={() => setIsChatOpen(true)}
         onTriggerSos={() => handleTriggerAction('SOS_PRESS')}
       />
