@@ -34,7 +34,7 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
       "Summarize current obstacle detections from Smart Glasses",
     ];
     const randomPrompt = sampleVoicePrompts[Math.floor(Math.random() * sampleVoicePrompts.length)];
-    
+
     setTimeout(() => {
       setIsRecording(false);
       onSendMessage(randomPrompt);
@@ -43,126 +43,130 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
 
   return (
     <div style={styles.overlay}>
-      <div className="glass-card" style={styles.modal}>
-        {/* Modal Header */}
-        <div style={styles.header}>
-          <div style={styles.titleRow}>
-            <div style={styles.botAvatar}>
-              <Bot size={22} color="#00F2FE" />
+      <div style={styles.modalCard}>
+        {/* Header */}
+        <div style={styles.modalHeader}>
+          <div style={styles.headerLeft}>
+            <div style={styles.botIconBadge}>
+              <Bot size={18} color="#3DDC91" />
             </div>
             <div>
-              <span style={styles.title}>Aura Health AI Assistant</span>
-              <span style={styles.subtitle}>Analyzing real-time tri-wearable sensor fusion</span>
+              <span className="eyebrow-label">INTELLIGENCE CONSOLE</span>
+              <h3 style={styles.modalTitle}>Aura Health AI Assistant</h3>
             </div>
           </div>
 
-          <button onClick={onClose} style={styles.closeBtn}>
-            <X size={20} color="#94A3B8" />
+          <button onClick={onClose} style={styles.closeBtn} title="Close Assistant">
+            <X size={18} color="#828786" />
           </button>
         </div>
 
-        {/* Suggested Quick Prompts */}
-        <div style={styles.chipScroll}>
+        {/* Quick Suggestion Pills */}
+        <div style={styles.quickPillRow}>
           <button
             onClick={() => onSendMessage("How was my father's heart rate over the last hour?")}
-            style={styles.chipBtn}
+            style={styles.suggestionPill}
           >
-            <Heart size={12} color="#EF4444" style={{ marginRight: 4 }} />
-            Father's HR over last hour?
+            <Heart size={12} color="#3DDC91" style={{ marginRight: 6 }} />
+            <span>Father's HR history</span>
           </button>
+
           <button
             onClick={() => onSendMessage("Any safety alerts I should know about?")}
-            style={styles.chipBtn}
+            style={styles.suggestionPill}
           >
-            <ShieldCheck size={12} color="#10B981" style={{ marginRight: 4 }} />
-            Any safety alerts?
+            <ShieldCheck size={12} color="#3DDC91" style={{ marginRight: 6 }} />
+            <span>Safety alerts summary</span>
           </button>
+
           <button
             onClick={() => onSendMessage("Show obstacle map summary")}
-            style={styles.chipBtn}
+            style={styles.suggestionPill}
           >
-            <Eye size={12} color="#00F2FE" style={{ marginRight: 4 }} />
-            Show obstacle summary
+            <Eye size={12} color="#3DDC91" style={{ marginRight: 6 }} />
+            <span>Obstacle map summary</span>
           </button>
         </div>
 
-        {/* Chat Thread */}
-        <div style={styles.chatThread}>
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              style={{
-                ...styles.messageBubble,
-                alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                backgroundColor: msg.sender === 'user' ? '#1E293B' : 'rgba(15, 23, 42, 0.9)',
-                borderColor: msg.sender === 'user' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 242, 254, 0.3)',
-              }}
-            >
-              <div style={styles.bubbleHeader}>
-                <span style={{
-                  ...styles.senderName,
-                  color: msg.sender === 'user' ? '#94A3B8' : '#00F2FE'
-                }}>
-                  {msg.sender === 'user' ? 'You (Voice / Text)' : 'Aura AI'}
-                </span>
-                <span style={styles.timeText}>
-                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
-
-              <span style={styles.bubbleText}>{msg.text}</span>
-
-              {/* Render Multi-Modal Telemetry Data Card (Figure 13 in Paper) */}
-              {msg.dataCard && (
-                <div style={styles.dataCardContainer}>
-                  <div style={styles.dataCardTitle}>
-                    <Sparkles size={14} color="#00F2FE" style={{ marginRight: 4 }} />
-                    <span>{msg.dataCard.title}</span>
-                  </div>
-
-                  {msg.dataCard.hrTrend1h && (
-                    <div style={styles.trendRow}>
-                      <span style={styles.cardSublabel}>HR TREND (1H): Avg {msg.dataCard.averageHr} BPM</span>
-                      <div style={styles.barChartRow}>
-                        {msg.dataCard.hrTrend1h.map((pt, idx) => (
-                          <div key={idx} style={styles.barGroup}>
-                            <div style={{
-                              ...styles.bar,
-                              height: `${(pt.value / 130) * 45}px`,
-                              backgroundColor: pt.value > 85 ? '#F59E0B' : '#00F2FE'
-                            }} />
-                            <span style={styles.barLabel}>{pt.time}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {msg.dataCard.correlatedEvent && (
-                    <div style={styles.eventBox}>
-                      <span style={styles.eventText}>
-                        🔗 <strong>Cross-Device Correlation:</strong> {msg.dataCard.correlatedEvent}
-                      </span>
-                    </div>
-                  )}
+        {/* Chat Stream Thread */}
+        <div style={styles.chatStream}>
+          {messages.map((msg) => {
+            const isUser = msg.sender === 'user';
+            return (
+              <div
+                key={msg.id}
+                style={{
+                  ...styles.bubble,
+                  alignSelf: isUser ? 'flex-end' : 'flex-start',
+                  backgroundColor: isUser ? '#132322' : '#0E1A19',
+                  borderColor: isUser ? 'rgba(255, 255, 255, 0.12)' : 'rgba(61, 220, 145, 0.25)',
+                }}
+              >
+                <div style={styles.bubbleHeader}>
+                  <span style={{
+                    ...styles.senderLabel,
+                    color: isUser ? '#828786' : '#3DDC91',
+                  }}>
+                    {isUser ? 'USER PROMPT' : 'AURA COGNITIVE AGENT'}
+                  </span>
+                  <span style={styles.bubbleTime}>
+                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
                 </div>
-              )}
-            </div>
-          ))}
+
+                <p style={styles.bubbleText}>{msg.text}</p>
+
+                {msg.dataCard && (
+                  <div style={styles.dataCard}>
+                    <div style={styles.cardHeaderRow}>
+                      <Sparkles size={14} color="#3DDC91" style={{ marginRight: 6 }} />
+                      <span style={styles.cardHeaderTitle}>{msg.dataCard.title}</span>
+                    </div>
+
+                    {msg.dataCard.hrTrend1h && (
+                      <div style={styles.trendCluster}>
+                        <span style={styles.trendLabel}>HR 1-HOUR WINDOW: AVG {msg.dataCard.averageHr} BPM</span>
+                        <div style={styles.barTrace}>
+                          {msg.dataCard.hrTrend1h.map((pt, idx) => (
+                            <div key={idx} style={styles.barUnit}>
+                              <div style={{
+                                ...styles.barFill,
+                                height: `${(pt.value / 130) * 40}px`,
+                                backgroundColor: pt.value > 85 ? '#FFCD48' : '#3DDC91',
+                              }} />
+                              <span style={styles.barTime}>{pt.time}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {msg.dataCard.correlatedEvent && (
+                      <div style={styles.correlationRow}>
+                        <span style={styles.correlationText}>
+                          <strong>Correlation:</strong> {msg.dataCard.correlatedEvent}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* Input Bar */}
-        <div style={styles.inputContainer}>
+        {/* Bottom Input Area */}
+        <div style={styles.inputArea}>
           <button
             onClick={handleVoiceTrigger}
             style={{
-              ...styles.micBtn,
-              backgroundColor: isRecording ? '#EF4444' : 'rgba(0, 242, 254, 0.15)',
-              borderColor: isRecording ? '#EF4444' : 'rgba(0, 242, 254, 0.4)'
+              ...styles.voiceBtn,
+              backgroundColor: isRecording ? '#FFCD48' : '#132322',
+              color: isRecording ? '#132322' : '#3DDC91',
             }}
-            title="Voice query input"
+            title="Voice Query"
           >
-            <Mic size={18} color={isRecording ? '#FFFFFF' : '#00F2FE'} />
+            <Mic size={16} />
           </button>
 
           <input
@@ -170,12 +174,12 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={isRecording ? "Listening to voice input..." : "Type a message or ask about vitals..."}
+            placeholder={isRecording ? "Listening to voice input..." : "Ask Aura AI about vitals, falls, or obstacles..."}
             style={styles.textInput}
           />
 
-          <button onClick={handleSend} style={styles.sendBtn}>
-            <Send size={18} color="#FFFFFF" />
+          <button onClick={handleSend} className="pill-btn-primary" style={styles.sendPill}>
+            <Send size={15} color="#132322" />
           </button>
         </div>
       </div>
@@ -190,84 +194,85 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    backdropFilter: 'blur(8px)',
-    zIndex: 1000,
+    backgroundColor: 'rgba(7, 15, 15, 0.85)',
+    backdropFilter: 'blur(10px)',
+    zIndex: 300,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     padding: '16px',
   },
-  modal: {
+  modalCard: {
     width: '100%',
     maxWidth: '560px',
-    height: '620px',
+    height: '640px',
+    backgroundColor: '#070F0F',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '24px',
     display: 'flex',
     flexDirection: 'column' as const,
-    padding: '20px',
-    gap: '12px',
+    padding: '24px',
+    gap: '16px',
+    boxShadow: 'rgba(0, 0, 0, 0.5) 0 20px 50px',
   },
-  header: {
+  modalHeader: {
     display: 'flex',
     flexDirection: 'row' as const,
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    paddingBottom: '12px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+    paddingBottom: '14px',
   },
-  titleRow: {
+  headerLeft: {
     display: 'flex',
-    flexDirection: 'row' as const,
     alignItems: 'center',
     gap: '10px',
   },
-  botAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0, 242, 254, 0.15)',
+  botIconBadge: {
+    width: '34px',
+    height: '34px',
+    borderRadius: '10px',
+    backgroundColor: '#132322',
+    border: '1px solid rgba(61, 220, 145, 0.3)',
     display: 'flex',
-    justifyContent: 'center',
     alignItems: 'center',
-    border: '1px solid rgba(0, 242, 254, 0.3)',
+    justifyContent: 'center',
   },
-  title: {
-    fontSize: '16px',
-    fontWeight: '700',
-    color: '#F8FAFC',
-    display: 'block',
-  },
-  subtitle: {
-    fontSize: '11px',
-    color: '#64748B',
-    display: 'block',
+  modalTitle: {
+    fontSize: '17px',
+    fontWeight: '500',
+    color: '#FFFFFF',
+    letterSpacing: '-0.08px',
+    margin: 0,
   },
   closeBtn: {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
+    padding: '4px',
   },
-  chipScroll: {
+  quickPillRow: {
     display: 'flex',
     flexDirection: 'row' as const,
     gap: '8px',
     overflowX: 'auto' as const,
     paddingBottom: '4px',
   },
-  chipBtn: {
-    display: 'flex',
-    flexDirection: 'row' as const,
+  suggestionPill: {
+    display: 'inline-flex',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: '#132322',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '16px',
-    padding: '4px 10px',
-    fontSize: '11px',
-    color: '#CBD5E1',
+    borderRadius: '56px',
+    padding: '6px 14px',
+    fontSize: '12px',
+    color: '#FFFFFF',
     cursor: 'pointer',
     whiteSpace: 'nowrap' as const,
+    letterSpacing: '-0.08px',
+    transition: 'border-color 0.15s ease',
   },
-  chatThread: {
+  chatStream: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column' as const,
@@ -275,10 +280,10 @@ const styles = {
     overflowY: 'auto' as const,
     paddingRight: '4px',
   },
-  messageBubble: {
-    maxWidth: '88%',
-    padding: '12px 14px',
-    borderRadius: '14px',
+  bubble: {
+    maxWidth: '85%',
+    padding: '14px 16px',
+    borderRadius: '20px',
     border: '1px solid',
     display: 'flex',
     flexDirection: 'column' as const,
@@ -290,118 +295,120 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  senderName: {
-    fontSize: '11px',
-    fontWeight: '700',
+  senderLabel: {
+    fontSize: '9px',
+    fontWeight: '600',
+    letterSpacing: '0.45px',
+    textTransform: 'uppercase' as const,
   },
-  timeText: {
+  bubbleTime: {
     fontSize: '10px',
-    color: '#64748B',
+    color: '#828786',
   },
   bubbleText: {
-    fontSize: '13px',
-    color: '#F8FAFC',
-    lineHeight: '1.4',
+    fontSize: '14px',
+    color: '#FFFFFF',
+    lineHeight: '1.45',
+    margin: 0,
   },
-  dataCardContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    border: '1px solid rgba(0, 242, 254, 0.2)',
-    borderRadius: '10px',
-    padding: '10px',
+  dataCard: {
+    backgroundColor: '#070F0F',
+    border: '1px solid rgba(61, 220, 145, 0.2)',
+    borderRadius: '14px',
+    padding: '12px',
     marginTop: '6px',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '8px',
   },
-  dataCardTitle: {
+  cardHeaderRow: {
     display: 'flex',
-    flexDirection: 'row' as const,
     alignItems: 'center',
-    fontSize: '12px',
-    fontWeight: '700',
-    color: '#00F2FE',
   },
-  trendRow: {
+  cardHeaderTitle: {
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#3DDC91',
+  },
+  trendCluster: {
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '6px',
   },
-  cardSublabel: {
+  trendLabel: {
     fontSize: '10px',
-    color: '#94A3B8',
+    color: '#828786',
     fontFamily: 'JetBrains Mono, monospace',
   },
-  barChartRow: {
+  barTrace: {
     display: 'flex',
     flexDirection: 'row' as const,
     alignItems: 'flex-end',
-    gap: '12px',
-    height: '55px',
+    gap: '10px',
+    height: '50px',
     paddingTop: '6px',
   },
-  barGroup: {
+  barUnit: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
-    gap: '2px',
+    gap: '3px',
     flex: 1,
   },
-  bar: {
+  barFill: {
     width: '100%',
-    maxWidth: '18px',
+    maxWidth: '16px',
     borderRadius: '4px 4px 0 0',
   },
-  barLabel: {
+  barTime: {
     fontSize: '8px',
-    color: '#64748B',
+    color: '#828786',
   },
-  eventBox: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    border: '1px solid rgba(245, 158, 11, 0.3)',
-    borderRadius: '6px',
-    padding: '6px 8px',
+  correlationRow: {
+    backgroundColor: '#132322',
+    padding: '6px 10px',
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
   },
-  eventText: {
+  correlationText: {
     fontSize: '11px',
-    color: '#FEF3C7',
+    color: '#D0D3D3',
   },
-  inputContainer: {
+  inputArea: {
     display: 'flex',
     flexDirection: 'row' as const,
+    alignItems: 'center',
     gap: '8px',
-    alignItems: 'center',
-    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-    paddingTop: '12px',
+    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+    paddingTop: '14px',
   },
-  micBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    border: '1px solid',
+  voiceBtn: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '56px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     display: 'flex',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     cursor: 'pointer',
   },
   textInput: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: '#132322',
     border: '1px solid rgba(255, 255, 255, 0.12)',
-    borderRadius: '20px',
-    padding: '8px 16px',
-    color: '#F8FAFC',
+    borderRadius: '56px',
+    padding: '10px 18px',
+    color: '#FFFFFF',
     fontSize: '13px',
     outline: 'none',
   },
-  sendBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#00F2FE',
-    border: 'none',
+  sendPill: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '56px',
+    padding: 0,
     display: 'flex',
-    justifyContent: 'center',
     alignItems: 'center',
-    cursor: 'pointer',
+    justifyContent: 'center',
   },
 };

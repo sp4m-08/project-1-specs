@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Box, Layers, Radio, RefreshCw } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { ObstacleCell3D } from '../types/telemetry';
 
 interface Spatial3dRadarProps {
@@ -29,10 +29,10 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
       const width = canvas.width;
       const height = canvas.height;
       const centerX = width / 2;
-      const centerY = height / 2 + 20;
+      const centerY = height / 2 + 15;
 
-      // Draw radar rings (orientation reference frame: FRONT, BACK, LEFT, RIGHT, UP, DOWN)
-      ctx.strokeStyle = 'rgba(79, 172, 254, 0.15)';
+      // Draw radar rings (Sauce Labs dark console aesthetic)
+      ctx.strokeStyle = 'rgba(61, 220, 145, 0.15)';
       ctx.lineWidth = 1;
       const maxRadius = Math.min(width, height) / 2 - 30;
 
@@ -43,7 +43,7 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
       }
 
       // Draw axis grid lines
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
       ctx.beginPath();
       ctx.moveTo(centerX - maxRadius, centerY);
       ctx.lineTo(centerX + maxRadius, centerY);
@@ -52,43 +52,36 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
       ctx.stroke();
 
       // Axis labels
-      ctx.fillStyle = '#94A3B8';
-      ctx.font = '10px Outfit, sans-serif';
+      ctx.fillStyle = '#828786';
+      ctx.font = '10px Inter, sans-serif';
       ctx.fillText('FRONT (0°)', centerX - 25, centerY - maxRadius - 6);
       ctx.fillText('BACK', centerX - 14, centerY + maxRadius + 14);
       ctx.fillText('LEFT', centerX - maxRadius - 32, centerY + 4);
       ctx.fillText('RIGHT', centerX + maxRadius + 8, centerY + 4);
 
-      // Draw origin sensor node (Smart Glasses)
-      ctx.fillStyle = '#00F2FE';
+      // Center sensor origin (Neon Pulse #3DDC91)
+      ctx.fillStyle = '#3DDC91';
       ctx.beginPath();
-      ctx.arc(centerX, centerY, 6, 0, Math.PI * 2);
+      ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.shadowColor = '#00F2FE';
-      ctx.shadowBlur = 10;
-      ctx.fill();
-      ctx.shadowBlur = 0;
 
-      // Draw 59 spatial obstacle points
+      // Draw obstacle point cells
       rotationAngle += 0.005;
 
       pointCloud.forEach((pt) => {
-        // Project 3D (x, y, z) into 2D canvas with slight rotation
-        const distNorm = Math.min(pt.distanceMm / 2000, 1.0); // max 2000mm
+        const distNorm = Math.min(pt.distanceMm / 2000, 1.0);
         const r = distNorm * maxRadius;
-
-        // Angle theta in radians
         const angleRad = (pt.yawDeg * Math.PI) / 180 - Math.PI / 2 + rotationAngle;
 
         const px = centerX + r * Math.cos(angleRad);
         const py = centerY + r * Math.sin(angleRad);
 
-        // Color coding by range (Red = Close < 800mm, Amber = 800-1200mm, Blue = Far > 1200mm)
-        let color = '#38BDF8';
+        // Color coding: Signal Yellow (#FFCD48) for close, Neon Pulse (#3DDC91) for clear
+        let color = '#3DDC91';
         if (pt.distanceMm < 800) {
-          color = '#EF4444'; // Red = Near-field obstacle (<0.8m)
+          color = '#FFCD48';
         } else if (pt.distanceMm < 1200) {
-          color = '#F59E0B'; // Amber
+          color = '#97DDBC';
         }
 
         ctx.fillStyle = color;
@@ -96,7 +89,6 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
         ctx.arc(px, py, pt.isAlertRange ? 4 : 3, 0, Math.PI * 2);
         ctx.fill();
 
-        // Glow for close points
         if (pt.isAlertRange) {
           ctx.strokeStyle = color;
           ctx.lineWidth = 1;
@@ -117,107 +109,104 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
   }, [pointCloud]);
 
   return (
-    <div className="glass-card" style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.titleGroup}>
-          <Layers size={20} color="#00F2FE" style={{ marginRight: 8 }} />
+    <div style={styles.outerWrapper}>
+      <div className="deep-abyss-card" style={styles.card}>
+        <div style={styles.header}>
           <div>
-            <span style={styles.title}>3-D Spatial Obstacle Map (59 Ultrasonic Cells)</span>
-            <span style={styles.subtitle}>
-              Orientation Transform: p = d · [cos φ cos θ, cos φ sin θ, sin φ]ᵀ
-            </span>
+            <span className="eyebrow-label">3D SPATIAL OBSTACLE MAPPING • 59 CELLS</span>
+            <h3 style={styles.title}>Kinematic Radar & Volumetric Grid</h3>
+          </div>
+
+          <div style={styles.legendCluster}>
+            <div style={styles.legendItem}>
+              <div style={{ ...styles.legendDot, backgroundColor: '#FFCD48' }} />
+              <span style={styles.legendText}>Hazard (&lt;0.8m)</span>
+            </div>
+            <div style={styles.legendItem}>
+              <div style={{ ...styles.legendDot, backgroundColor: '#97DDBC' }} />
+              <span style={styles.legendText}>Proximity (0.8–1.2m)</span>
+            </div>
+            <div style={styles.legendItem}>
+              <div style={{ ...styles.legendDot, backgroundColor: '#3DDC91' }} />
+              <span style={styles.legendText}>Clear (&gt;1.2m)</span>
+            </div>
           </div>
         </div>
 
-        <div style={styles.legendRow}>
-          <div style={styles.legendItem}>
-            <div style={{ ...styles.legendDot, backgroundColor: '#EF4444' }} />
-            <span style={styles.legendText}>Near (&lt;0.8m)</span>
-          </div>
-          <div style={styles.legendItem}>
-            <div style={{ ...styles.legendDot, backgroundColor: '#F59E0B' }} />
-            <span style={styles.legendText}>Mid (0.8-1.2m)</span>
-          </div>
-          <div style={styles.legendItem}>
-            <div style={{ ...styles.legendDot, backgroundColor: '#38BDF8' }} />
-            <span style={styles.legendText}>Far (1.2-2.0m)</span>
-          </div>
+        <div style={styles.canvasContainer}>
+          <canvas ref={canvasRef} width={460} height={310} style={styles.canvas} />
         </div>
-      </div>
 
-      <div style={styles.canvasContainer}>
-        <canvas ref={canvasRef} width={460} height={320} style={styles.canvas} />
-      </div>
-
-      <div style={styles.metaRow}>
-        <span style={styles.metaText}>Active Points: {pointCloud.length} / 59 cells</span>
-        <span style={styles.metaText}>Glasses Pitch: {pitchDeg}° | Yaw: {yawDeg}°</span>
+        <div style={styles.metaRow}>
+          <span style={styles.monoSubtext}>
+            Spherical Transform: p = d · [cos φ cos θ, cos φ sin θ, sin φ]ᵀ
+          </span>
+          <span style={styles.monoSubtext}>
+            Pitch: {pitchDeg}° • Yaw: {yawDeg}°
+          </span>
+        </div>
       </div>
     </div>
   );
 };
 
 const styles = {
-  container: {
-    padding: '18px 20px',
-    margin: '0 20px 16px 20px',
+  outerWrapper: {
+    padding: '0 20px 24px 20px',
+  },
+  card: {
+    backgroundColor: '#0E1A19',
+    borderRadius: '20px',
+    padding: '24px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '14px',
+    gap: '16px',
   },
   header: {
     display: 'flex',
     flexDirection: 'row' as const,
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     flexWrap: 'wrap' as const,
     gap: '12px',
   },
-  titleGroup: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    alignItems: 'center',
-  },
   title: {
-    fontSize: '15px',
-    fontWeight: '700',
-    color: '#F8FAFC',
-    display: 'block',
+    fontSize: '17px',
+    fontWeight: '500',
+    color: '#FFFFFF',
+    letterSpacing: '-0.08px',
+    margin: '4px 0 0 0',
   },
-  subtitle: {
-    fontSize: '11px',
-    color: '#64748B',
-    display: 'block',
-    fontFamily: 'JetBrains Mono, monospace',
-  },
-  legendRow: {
+  legendCluster: {
     display: 'flex',
     flexDirection: 'row' as const,
     gap: '12px',
+    flexWrap: 'wrap' as const,
   },
   legendItem: {
     display: 'flex',
-    flexDirection: 'row' as const,
     alignItems: 'center',
-    gap: '4px',
+    gap: '6px',
   },
   legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: '7px',
+    height: '7px',
+    borderRadius: '50%',
   },
   legendText: {
     fontSize: '11px',
-    color: '#94A3B8',
+    color: '#828786',
+    letterSpacing: '-0.08px',
   },
   canvasContainer: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: '12px',
-    padding: '10px',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
+    backgroundColor: '#070F0F',
+    borderRadius: '16px',
+    padding: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
   },
   canvas: {
     maxWidth: '100%',
@@ -227,12 +216,14 @@ const styles = {
     display: 'flex',
     flexDirection: 'row' as const,
     justifyContent: 'space-between',
+    flexWrap: 'wrap' as const,
+    gap: '8px',
     borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-    paddingTop: '8px',
+    paddingTop: '10px',
   },
-  metaText: {
+  monoSubtext: {
     fontSize: '11px',
-    color: '#94A3B8',
+    color: '#828786',
     fontFamily: 'JetBrains Mono, monospace',
   },
 };

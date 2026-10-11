@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, AlertTriangle, CheckCircle, Clock, XCircle, PhoneCall } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, Clock, X, PhoneCall } from 'lucide-react';
 import { FallAlertState } from '../types/telemetry';
 
 interface FallFusionMonitorProps {
@@ -12,106 +12,205 @@ export const FallFusionMonitor: React.FC<FallFusionMonitorProps> = ({
   onCancelAlert,
 }) => {
   const status = activeAlert?.status || 'IDLE';
-  const confidence = activeAlert?.confidence || 'NONE';
-
   const isHighAlert = status === 'HIGH_CONFIDENCE_ALERT';
   const isLowWarning = status === 'LOW_CONFIDENCE_WARNING';
   const isEscalated = status === 'ESCALATED_TO_CAREGIVER';
+  const isNormal = !isHighAlert && !isLowWarning && !isEscalated;
 
-  return (
-    <div
-      className={`glass-card ${isHighAlert || isEscalated ? 'critical-alert-card' : ''}`}
-      style={{
-        ...styles.container,
-        borderColor: isHighAlert || isEscalated ? '#EF4444' : isLowWarning ? '#F59E0B' : 'rgba(255,255,255,0.12)'
-      }}
-    >
-      <div style={styles.header}>
-        <div style={styles.titleRow}>
-          {isHighAlert || isEscalated ? (
-            <ShieldAlert size={22} color="#EF4444" style={{ marginRight: 8 }} />
-          ) : isLowWarning ? (
-            <AlertTriangle size={22} color="#F59E0B" style={{ marginRight: 8 }} />
-          ) : (
-            <CheckCircle size={22} color="#10B981" style={{ marginRight: 8 }} />
+  if (!isNormal) {
+    // High-alert or warning view
+    return (
+      <div style={styles.alertContainer}>
+        <div style={styles.alertCard}>
+          <div style={styles.alertHeader}>
+            <div style={styles.alertTitleRow}>
+              <AlertTriangle size={22} color={isHighAlert || isEscalated ? '#FFFFFF' : '#FFCD48'} />
+              <div>
+                <span className="eyebrow-label" style={{ color: isHighAlert || isEscalated ? '#FFFFFF' : '#FFCD48' }}>
+                  ALGORITHM 2 CRITICAL SIGNAL
+                </span>
+                <h3 style={styles.alertHeading}>{status.replace(/_/g, ' ')}</h3>
+              </div>
+            </div>
+
+            <span style={styles.alertWindowBadge}>Δt = 3.0s Matched</span>
+          </div>
+
+          <p style={styles.alertMessage}>
+            {activeAlert?.message || 'Cross-device fall event detected across Smart Cane & Smart Band.'}
+          </p>
+
+          {isLowWarning && (
+            <div style={styles.sosCountdownBox}>
+              <div style={styles.sosTimerRow}>
+                <Clock size={16} color="#FFCD48" />
+                <span style={styles.sosTimerText}>
+                  Cancel window active: <strong>{activeAlert?.sosWindowRemainingSec ?? 30}s remaining</strong>
+                </span>
+              </div>
+              <button onClick={onCancelAlert} className="pill-btn-primary" style={styles.cancelAlarmPill}>
+                <X size={16} color="#132322" style={{ marginRight: 6 }} />
+                <span>Cancel False Alarm</span>
+              </button>
+            </div>
           )}
 
-          <div>
-            <span style={styles.title}>Algorithm 2: Cross-Device Fall Verification</span>
-            <span style={styles.subtitle}>
-              Fuses candidate flags F_cane & F_band within Δt = 3.0s window
-            </span>
-          </div>
-        </div>
-
-        <div style={{
-          ...styles.confidenceBadge,
-          backgroundColor: isHighAlert ? 'rgba(239, 68, 68, 0.25)' : isLowWarning ? 'rgba(245, 158, 11, 0.25)' : 'rgba(16, 185, 129, 0.15)',
-          color: isHighAlert ? '#EF4444' : isLowWarning ? '#F59E0B' : '#10B981',
-          borderColor: isHighAlert ? '#EF4444' : isLowWarning ? '#F59E0B' : '#10B981',
-        }}>
-          Status: {status.replace(/_/g, ' ')}
+          {(isHighAlert || isEscalated) && (
+            <div style={styles.escalationDispatch}>
+              <PhoneCall size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <span style={styles.escalationText}>Emergency Telephony Dispatched to Primary Caregiver</span>
+            </div>
+          )}
         </div>
       </div>
+    );
+  }
 
-      {/* Main Alert Message Banner */}
-      <div style={{
-        ...styles.messageBox,
-        backgroundColor: isHighAlert || isEscalated ? 'rgba(239, 68, 68, 0.15)' : isLowWarning ? 'rgba(245, 158, 11, 0.15)' : 'rgba(0,0,0,0.25)',
-      }}>
-        <span style={{
-          ...styles.messageText,
-          color: isHighAlert || isEscalated ? '#F8FAFC' : isLowWarning ? '#FEF3C7' : '#94A3B8'
-        }}>
-          {activeAlert?.message || 'Both Smart Cane & Smart Band IMUs report normal posture and motion. Fall fusion monitoring active.'}
-        </span>
+  // Signature Sauce Labs Light Content Card (Mint Frost #edf7f5, 60px radius)
+  return (
+    <div style={styles.wrapper}>
+      <div className="mint-frost-card" style={styles.mintCard}>
+        <div style={styles.mintHeader}>
+          <div style={styles.titleStack}>
+            <span className="eyebrow-label-dark">ALGORITHM 2 • SENSOR FUSION ENGINE</span>
+            <h2 style={styles.mintHeadline}>Cross-Device Fall Verification</h2>
+            <p style={styles.mintBody}>
+              Continuous temporal correlation window (Δt = 3.0s). Eliminates isolated cane drops and wrist impacts through bi-directional verification.
+            </p>
+          </div>
+
+          <div style={styles.statusPill}>
+            <ShieldCheck size={16} color="#132322" />
+            <span style={styles.statusPillText}>Nominal State</span>
+          </div>
+        </div>
+
+        <div style={styles.mintSpecsGrid}>
+          <div style={styles.specTile}>
+            <span style={styles.specLabel}>CANE IMU (F_cane)</span>
+            <span style={styles.specValue}>0 (Normal)</span>
+          </div>
+          <div style={styles.specTile}>
+            <span style={styles.specLabel}>BAND IMU (F_band)</span>
+            <span style={styles.specValue}>0 (Normal)</span>
+          </div>
+          <div style={styles.specTile}>
+            <span style={styles.specLabel}>FUSION WINDOW</span>
+            <span style={styles.specValue}>Δt ≤ 3.0s</span>
+          </div>
+          <div style={styles.specTile}>
+            <span style={styles.specLabel}>SOS WINDOW</span>
+            <span style={styles.specValue}>T_resp = 30s</span>
+          </div>
+        </div>
       </div>
-
-      {/* SOS 30-Second Countdown Modal for Single-Device Warning */}
-      {isLowWarning && (
-        <div style={styles.sosCountdownContainer}>
-          <div style={styles.sosHeader}>
-            <Clock size={18} color="#F59E0B" style={{ marginRight: 6 }} />
-            <span style={styles.sosTitle}>SOS Response Window Active (T_resp = 30s)</span>
-          </div>
-
-          <div style={styles.counterCircle}>
-            <span style={styles.counterNumber}>{activeAlert?.sosWindowRemainingSec ?? 30}s</span>
-            <span style={styles.counterLabel}>REMAINING TO CANCEL</span>
-          </div>
-
-          <div style={styles.actionButtonsRow}>
-            <button onClick={onCancelAlert} style={styles.cancelBtn}>
-              <XCircle size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-              CANCEL FALSE ALARM (SOS BUTTON)
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* High-Confidence Escalation Banner */}
-      {(isHighAlert || isEscalated) && (
-        <div style={styles.escalationBox}>
-          <PhoneCall size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-          <span style={styles.escalationText}>
-            EMERGENCY CALL DISPATCHED: Caregiver & Emergency Contacts Notified!
-          </span>
-        </div>
-      )}
     </div>
   );
 };
 
 const styles = {
-  container: {
-    padding: '18px 20px',
-    margin: '0 20px 16px 20px',
+  wrapper: {
+    padding: '0 20px 24px 20px',
+  },
+  mintCard: {
+    backgroundColor: '#EDF7F5',
+    color: '#132322',
+    borderRadius: '60px',
+    padding: '36px 32px',
+    boxShadow: 'rgba(0, 0, 0, 0.04) 1px 0px 9px 2px',
+    border: '1px solid #D0D3D3',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '14px',
-    border: '1px solid',
+    gap: '24px',
   },
-  header: {
+  mintHeader: {
+    display: 'flex',
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: '16px',
+    flexWrap: 'wrap' as const,
+  },
+  titleStack: {
+    flex: 1,
+    minWidth: '240px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '6px',
+  },
+  mintHeadline: {
+    fontSize: '22px',
+    fontWeight: '500',
+    color: '#132322',
+    letterSpacing: '-0.08px',
+    margin: 0,
+    lineHeight: '1.2',
+  },
+  mintBody: {
+    fontSize: '14px',
+    color: '#424F4F',
+    lineHeight: '1.45',
+    margin: 0,
+    maxWidth: '560px',
+  },
+  statusPill: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    backgroundColor: '#3DDC91',
+    color: '#132322',
+    borderRadius: '56px',
+    padding: '8px 16px',
+    fontWeight: '500',
+    fontSize: '13px',
+    alignSelf: 'flex-start' as const,
+  },
+  statusPillText: {
+    color: '#132322',
+    fontWeight: '600',
+  },
+  mintSpecsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+    gap: '12px',
+    paddingTop: '16px',
+    borderTop: '1px solid #D0D3D3',
+  },
+  specTile: {
+    backgroundColor: '#FFFFFF',
+    padding: '12px 14px',
+    borderRadius: '16px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px',
+    border: '1px solid #D0D3D3',
+  },
+  specLabel: {
+    fontSize: '9px',
+    fontWeight: '500',
+    color: '#828786',
+    letterSpacing: '0.45px',
+    textTransform: 'uppercase' as const,
+  },
+  specValue: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#132322',
+    letterSpacing: '-0.08px',
+  },
+  alertContainer: {
+    padding: '0 20px 24px 20px',
+  },
+  alertCard: {
+    backgroundColor: '#0E1A19',
+    border: '2px solid #FFCD48',
+    borderRadius: '24px',
+    padding: '24px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '16px',
+  },
+  alertHeader: {
     display: 'flex',
     flexDirection: 'row' as const,
     justifyContent: 'space-between',
@@ -119,110 +218,65 @@ const styles = {
     flexWrap: 'wrap' as const,
     gap: '10px',
   },
-  titleRow: {
+  alertTitleRow: {
     display: 'flex',
-    flexDirection: 'row' as const,
     alignItems: 'center',
+    gap: '10px',
   },
-  title: {
-    fontSize: '15px',
-    fontWeight: '700',
-    color: '#F8FAFC',
-    display: 'block',
-  },
-  subtitle: {
-    fontSize: '11px',
-    color: '#64748B',
-    display: 'block',
-  },
-  confidenceBadge: {
-    fontSize: '11px',
-    fontWeight: '700',
-    padding: '4px 10px',
-    borderRadius: '12px',
-    border: '1px solid',
-  },
-  messageBox: {
-    padding: '12px 14px',
-    borderRadius: '10px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-  },
-  messageText: {
-    fontSize: '13px',
+  alertHeading: {
+    fontSize: '17px',
     fontWeight: '600',
+    color: '#FFFFFF',
+    margin: 0,
+  },
+  alertWindowBadge: {
+    backgroundColor: 'rgba(255, 205, 72, 0.15)',
+    color: '#FFCD48',
+    padding: '4px 10px',
+    borderRadius: '56px',
+    fontSize: '11px',
+    fontWeight: '500',
+  },
+  alertMessage: {
+    fontSize: '14px',
+    color: '#FFFFFF',
+    margin: 0,
     lineHeight: '1.4',
   },
-  sosCountdownContainer: {
+  sosCountdownBox: {
+    backgroundColor: '#132322',
+    border: '1px solid rgba(255, 205, 72, 0.4)',
+    borderRadius: '16px',
+    padding: '16px',
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
     gap: '12px',
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    padding: '16px',
-    borderRadius: '12px',
-    border: '1px dashed rgba(245, 158, 11, 0.4)',
   },
-  sosHeader: {
+  sosTimerRow: {
     display: 'flex',
-    flexDirection: 'row' as const,
     alignItems: 'center',
+    gap: '8px',
   },
-  sosTitle: {
+  sosTimerText: {
     fontSize: '13px',
-    fontWeight: '700',
-    color: '#F59E0B',
+    color: '#FFCD48',
   },
-  counterCircle: {
+  cancelAlarmPill: {
+    padding: '10px 24px',
+    borderRadius: '56px',
+  },
+  escalationDispatch: {
     display: 'flex',
-    flexDirection: 'column' as const,
     alignItems: 'center',
-    justifyContent: 'center',
-    width: '80px',
-    height: '80px',
-    borderRadius: '40px',
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-    border: '2px solid #F59E0B',
-  },
-  counterNumber: {
-    fontSize: '24px',
-    fontWeight: '800',
-    color: '#F59E0B',
-  },
-  counterLabel: {
-    fontSize: '7px',
-    fontWeight: '700',
-    color: '#FEF3C7',
-    letterSpacing: '0.5px',
-  },
-  actionButtonsRow: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    gap: '10px',
-  },
-  cancelBtn: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    alignItems: 'center',
-    backgroundColor: '#10B981',
-    border: 'none',
-    color: '#FFFFFF',
-    padding: '8px 16px',
-    borderRadius: '20px',
-    fontWeight: '700',
-    fontSize: '12px',
-    cursor: 'pointer',
-  },
-  escalationBox: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    alignItems: 'center',
-    backgroundColor: '#EF4444',
+    backgroundColor: '#070F0F',
+    border: '1px solid #FFCD48',
     padding: '12px 16px',
-    borderRadius: '10px',
+    borderRadius: '12px',
   },
   escalationText: {
     fontSize: '13px',
-    fontWeight: '700',
+    fontWeight: '500',
     color: '#FFFFFF',
   },
 };

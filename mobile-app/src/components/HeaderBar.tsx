@@ -1,5 +1,5 @@
-import React from 'react';
-import { ShieldCheck as ShieldIcon, AlertOctagon, Bot as BotIcon, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bot, ShieldCheck, Zap, X, AlertTriangle } from 'lucide-react';
 
 interface HeaderBarProps {
   isConnected: boolean;
@@ -18,161 +18,197 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   onOpenChat,
   onTriggerSos,
 }) => {
+  const [showAnnouncement, setShowAnnouncement] = useState(true);
+
   return (
-    <div className="header-container" style={styles.container}>
-      <div style={styles.leftSection}>
-        <div style={styles.titleRow}>
-          <Zap size={22} color="#00F2FE" />
-          <span style={styles.appTitle}>Secure AIoT Assistive Suite</span>
+    <header style={styles.headerWrapper}>
+      {/* Sauce Labs Announcement Banner */}
+      {showAnnouncement && (
+        <div style={styles.announcementBanner}>
+          <div style={styles.announcementContent}>
+            <span style={styles.announcementText}>
+              <strong>COMMAND CENTER READY</strong> — AES-256-GCM Telemetry Active • Live Signal at 50 Hz
+            </span>
+          </div>
+          <button
+            onClick={() => setShowAnnouncement(false)}
+            style={styles.closeBannerBtn}
+            title="Dismiss Announcement"
+          >
+            <X size={14} color="#132322" />
+          </button>
         </div>
-        <div style={styles.badgeRow}>
+      )}
+
+      {/* Main Navigation Bar */}
+      <div style={styles.navBar}>
+        <div style={styles.leftCluster}>
+          <div style={styles.brandRow}>
+            <div style={styles.brandIconBox}>
+              <Zap size={18} color="#3DDC91" />
+            </div>
+            <div>
+              <span className="eyebrow-label">COMMAND CONSOLE</span>
+              <h1 style={styles.appTitle}>AIoT Assistive Suite</h1>
+            </div>
+          </div>
+
           <div
-            style={{ ...styles.statusBadge, cursor: onConfigureServer ? 'pointer' : 'default' }}
             onClick={onConfigureServer}
-            title={`Server: ${serverHost}:4000 (Click to change IP)`}
+            style={{
+              ...styles.statusPill,
+              cursor: onConfigureServer ? 'pointer' : 'default',
+            }}
+            title={`Tap to switch host (Current: ${serverHost}:4000)`}
           >
             <div
               style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: isConnected ? '#10B981' : '#EF4444',
-                marginRight: 6,
+                ...styles.pulseDot,
+                backgroundColor: isConnected ? '#3DDC91' : '#828786',
               }}
-              className={isConnected ? 'pulse-emerald' : ''}
+              className={isConnected ? 'live-pulse-green' : ''}
             />
             <span style={styles.statusText}>
-              {isConnected ? `Connected (${serverHost})` : `Offline (${serverHost})`}
+              {isConnected ? `Online • ${serverHost}` : `Offline • ${serverHost}`}
             </span>
           </div>
+        </div>
 
-          <div style={styles.securityBadge}>
-            <ShieldIcon size={13} color="#00F2FE" style={{ marginRight: 4 }} />
-            <span style={styles.securityText}>AES-256-GCM Payload Active</span>
-          </div>
+        <div style={styles.rightCluster}>
+          <button onClick={onOpenChat} className="pill-btn-primary" style={styles.ctaPill}>
+            <Bot size={16} color="#132322" style={{ marginRight: 6 }} />
+            <span>Aura AI</span>
+          </button>
+
+          <button
+            onClick={onTriggerSos}
+            className="pill-btn-ghost"
+            style={{
+              ...styles.sosPill,
+              borderColor: activeAlertCount > 0 ? '#FFCD48' : '#FFFFFF',
+              color: activeAlertCount > 0 ? '#FFCD48' : '#FFFFFF',
+            }}
+          >
+            <AlertTriangle size={15} style={{ marginRight: 4 }} />
+            <span>SOS</span>
+          </button>
         </div>
       </div>
-
-      <div style={styles.rightSection}>
-        <button onClick={onOpenChat} style={styles.chatButton}>
-          <BotIcon size={18} color="#00F2FE" style={{ marginRight: 6 }} />
-          <span style={styles.chatButtonText}>Aura AI</span>
-        </button>
-
-        <button onClick={onTriggerSos} style={styles.sosButton}>
-          <AlertOctagon size={18} color="#FFFFFF" style={{ marginRight: 4 }} />
-          <span style={styles.sosButtonText}>SOS</span>
-        </button>
-      </div>
-    </div>
+    </header>
   );
 };
 
 const styles = {
-  container: {
+  headerWrapper: {
+    position: 'sticky' as const,
+    top: 0,
+    zIndex: 200,
+    backgroundColor: '#132322',
+  },
+  announcementBanner: {
+    backgroundColor: '#3DDC91',
+    color: '#132322',
+    padding: '8px 16px',
+    display: 'flex',
+    flexDirection: 'row' as const,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    fontSize: '13px',
+    fontWeight: '500',
+    letterSpacing: '-0.08px',
+  },
+  announcementContent: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  },
+  announcementText: {
+    color: '#132322',
+  },
+  closeBannerBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '2px',
+  },
+  navBar: {
     display: 'flex',
     flexDirection: 'row' as const,
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '16px 20px',
-    backgroundColor: 'rgba(19, 27, 42, 0.9)',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(16px)',
-    position: 'sticky' as const,
-    top: 0,
-    zIndex: 100,
+    backgroundColor: '#132322',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
   },
-  leftSection: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '6px',
-  },
-  titleRow: {
+  leftCluster: {
     display: 'flex',
     flexDirection: 'row' as const,
     alignItems: 'center',
-    gap: '8px',
+    gap: '14px',
+    flexWrap: 'wrap' as const,
+  },
+  brandRow: {
+    display: 'flex',
+    flexDirection: 'row' as const,
+    alignItems: 'center',
+    gap: '10px',
+  },
+  brandIconBox: {
+    width: '34px',
+    height: '34px',
+    borderRadius: '10px',
+    backgroundColor: '#0E1A19',
+    border: '1px solid rgba(61, 220, 145, 0.3)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   appTitle: {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: '#F8FAFC',
-    letterSpacing: '0.3px',
+    fontSize: '17px',
+    fontWeight: '500',
+    color: '#FFFFFF',
+    letterSpacing: '-0.08px',
+    margin: 0,
+    lineHeight: '1.2',
   },
-  badgeRow: {
-    display: 'flex',
-    flexDirection: 'row' as const,
+  statusPill: {
+    display: 'inline-flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '6px',
+    backgroundColor: '#0E1A19',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
+    borderRadius: '56px',
+    padding: '5px 12px',
+    transition: 'border-color 0.15s ease',
   },
-  statusBadge: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
-    padding: '3px 8px',
-    borderRadius: '12px',
-    border: '1px solid rgba(16, 185, 129, 0.3)',
+  pulseDot: {
+    width: '7px',
+    height: '7px',
+    borderRadius: '50%',
   },
   statusText: {
-    fontSize: '11px',
-    color: '#10B981',
-    fontWeight: '600',
+    fontSize: '12px',
+    color: '#828786',
+    fontWeight: '400',
+    letterSpacing: '-0.08px',
   },
-  securityBadge: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 242, 254, 0.1)',
-    padding: '3px 8px',
-    borderRadius: '12px',
-    border: '1px solid rgba(0, 242, 254, 0.3)',
-  },
-  securityText: {
-    fontSize: '11px',
-    color: '#00F2FE',
-    fontWeight: '600',
-  },
-  rightSection: {
+  rightCluster: {
     display: 'flex',
     flexDirection: 'row' as const,
     alignItems: 'center',
     gap: '10px',
   },
-  chatButton: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    alignItems: 'center',
-    backgroundColor: 'rgba(79, 172, 254, 0.15)',
-    border: '1px solid rgba(79, 172, 254, 0.4)',
-    color: '#00F2FE',
-    padding: '8px 14px',
-    borderRadius: '20px',
-    cursor: 'pointer',
-    fontWeight: '600',
+  ctaPill: {
+    padding: '8px 18px',
     fontSize: '13px',
-    transition: 'all 0.2s ease',
+    borderRadius: '56px',
   },
-  chatButtonText: {
-    color: '#00F2FE',
-    fontWeight: '600',
-  },
-  sosButton: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    alignItems: 'center',
-    backgroundColor: '#EF4444',
-    border: 'none',
-    color: '#FFFFFF',
-    padding: '8px 16px',
-    borderRadius: '20px',
-    cursor: 'pointer',
-    fontWeight: '700',
+  sosPill: {
+    padding: '7px 16px',
     fontSize: '13px',
-    boxShadow: '0 0 12px rgba(239, 68, 68, 0.5)',
-  },
-  sosButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    borderRadius: '56px',
   },
 };

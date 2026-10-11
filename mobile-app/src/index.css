@@ -1,22 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 :root {
-  --bg-main: #0b0f17;
-  --bg-card: #131b2a;
-  --bg-card-hover: #1b263b;
-  --accent-cyan: #00f2fe;
-  --accent-blue: #4facfe;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-rose: #ef4444;
-  --accent-purple: #8b5cf6;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --glass-bg: rgba(19, 27, 42, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-heading: 'Outfit', var(--font-family);
+  /* Sauce Labs Color Tokens */
+  --color-obsidian-shell: #132322;
+  --color-pure-white: #ffffff;
+  --color-mint-frost: #edf7f5;
+  --color-deep-abyss: #0e1a19;
+  --color-charcoal: #070f0f;
+  --color-fog-border: #d0d3d3;
+  --color-stone-border: #b2b6b4;
+  --color-slate-text: #828786;
+  --color-graphite-fill: #424f4f;
+  --color-pure-black: #000000;
+  --color-neon-pulse: #3ddc91;
+  --color-mint-whisper: #97ddbc;
+  --color-signal-yellow: #ffcd48;
+
+  /* Typography */
+  --font-aeonik: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-aeonikfono: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Typography — Scale */
+  --text-body-sm: 14px;
+  --leading-body-sm: 1.45;
+  --text-body: 16px;
+  --leading-body: 1.5;
+  --tracking-body: -0.08px;
+  --text-body-lg: 18px;
+  --leading-body-lg: 1.45;
+  --text-subheading: 24px;
+  --leading-subheading: 1.4;
+  --tracking-subheading: 0.96px;
+  --text-heading-sm: 32px;
+  --leading-heading-sm: 1.22;
+  --text-heading: 40px;
+  --leading-heading: 1.2;
+  --text-heading-lg: 48px;
+  --leading-heading-lg: 1.12;
+  --text-display: 64px;
+  --leading-display: 1.1;
+
+  /* Named Radii */
+  --radius-tabs: 56px;
+  --radius-cards: 20px;
+  --radius-buttons: 56px;
+  --radius-largecards: 60px;
+  --radius-smallelements: 10px;
+
+  /* Shadows */
+  --shadow-md: rgba(0, 0, 0, 0.04) 1px 0px 9px 2px;
+
+  /* Surfaces */
+  --surface-obsidian-canvas: #132322;
+  --surface-deep-card: #0e1a19;
+  --surface-mint-card: #edf7f5;
+  --surface-white-panel: #ffffff;
 }
 
 * {
@@ -27,9 +66,12 @@
 }
 
 body {
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  font-family: var(--font-family);
+  background-color: var(--color-obsidian-shell);
+  color: var(--color-pure-white);
+  font-family: var(--font-aeonik);
+  font-size: var(--text-body);
+  letter-spacing: var(--tracking-body);
+  line-height: var(--leading-body);
   overflow-x: hidden;
   user-select: none;
 }
@@ -40,67 +82,140 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-main);
+  background: var(--color-deep-abyss);
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a3850;
+  background: var(--color-graphite-fill);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-blue);
+  background: var(--color-neon-pulse);
 }
 
-/* Glassmorphism containers */
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  transition: all 0.25s ease;
+/* Eyebrow Label (Sauce Labs signature structural anchor) */
+.eyebrow-label {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+  color: var(--color-neon-pulse);
+  display: block;
 }
 
-.glass-card:hover {
-  border-color: rgba(79, 172, 254, 0.3);
+.eyebrow-label-dark {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+  color: var(--color-obsidian-shell);
+  display: block;
 }
 
-/* Pulse animation for live online indicators */
-@keyframes pulse-glow {
+/* Sauce Labs Card Classes */
+.deep-abyss-card {
+  background-color: var(--color-deep-abyss);
+  border-radius: var(--radius-cards);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s ease;
+}
+
+.deep-abyss-card:hover {
+  border-color: rgba(61, 220, 145, 0.25);
+}
+
+.mint-frost-card {
+  background-color: var(--color-mint-frost);
+  color: var(--color-obsidian-shell);
+  border-radius: var(--radius-largecards);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-fog-border);
+}
+
+/* Primary Pill Button */
+.pill-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-neon-pulse);
+  color: var(--color-obsidian-shell);
+  border: none;
+  border-radius: var(--radius-buttons);
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.08px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.pill-btn-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.pill-btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Ghost Pill Button */
+.pill-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: var(--color-pure-white);
+  border: 1.5px solid var(--color-pure-white);
+  border-radius: var(--radius-buttons);
+  padding: 9px 20px;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.pill-btn-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Secondary Dark Pill Button */
+.pill-btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-deep-abyss);
+  color: var(--color-slate-text);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-buttons);
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pill-btn-dark:hover {
+  color: var(--color-pure-white);
+  border-color: var(--color-neon-pulse);
+}
+
+/* Green Live Signal Pulse */
+@keyframes neon-pulse-anim {
   0% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+    box-shadow: 0 0 0 0 rgba(61, 220, 145, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 8px rgba(61, 220, 145, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 0 rgba(61, 220, 145, 0);
   }
 }
 
-.pulse-emerald {
-  animation: pulse-glow 2s infinite;
-}
-
-@keyframes alert-pulse {
-  0%, 100% {
-    background-color: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.6);
-  }
-  50% {
-    background-color: rgba(239, 68, 68, 0.35);
-    border-color: rgba(239, 68, 68, 1);
-  }
-}
-
-.critical-alert-card {
-  animation: alert-pulse 1.5s infinite;
+.live-pulse-green {
+  animation: neon-pulse-anim 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 /* Typography styles */
-h1, h2, h3, h4 {
-  font-family: var(--font-heading);
-}
-
 .mono-code {
   font-family: var(--font-mono);
 }

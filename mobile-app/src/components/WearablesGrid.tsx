@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Navigation, Activity, Heart, ShieldAlert, Zap, Compass, Thermometer, Footprints } from 'lucide-react';
+import { Eye, Navigation, Activity } from 'lucide-react';
 import { SpecsTelemetry, SpecsVision, CaneTelemetry, BandTelemetry } from '../types/telemetry';
 
 interface WearablesGridProps {
@@ -17,7 +17,6 @@ export const WearablesGrid: React.FC<WearablesGridProps> = ({
 }) => {
   const specsDist = specs?.distance_m || 0.85;
   const caneDist = cane?.distance_m || 0.85;
-  const isObstacleWarning = specsDist < 1.0 || caneDist < 0.8;
 
   const latestDetection = specsVision?.detections?.[0];
   const visionLabel = latestDetection?.label || 'Continuous Scanning';
@@ -31,122 +30,165 @@ export const WearablesGrid: React.FC<WearablesGridProps> = ({
 
   return (
     <div style={styles.gridContainer}>
-      {/* 1. Smart Glasses Card */}
-      <div className="glass-card" style={styles.card}>
-        <div style={styles.cardHeader}>
-          <div style={styles.iconContainer}>
-            <Eye size={20} color="#00F2FE" />
+      {/* 1. Smart Glasses Module Card */}
+      <div className="deep-abyss-card" style={styles.card}>
+        <div style={styles.cardTop}>
+          <div style={styles.iconBox}>
+            <Eye size={18} color="#3DDC91" />
           </div>
-          <div style={styles.cardTitleSection}>
-            <span style={styles.deviceTitle}>Smart Glasses</span>
-            <span style={styles.onlineBadge}>Online</span>
+          <div style={styles.headerText}>
+            <span className="eyebrow-label">WEARABLE NODE 01</span>
+            <h3 style={styles.deviceHeading}>Smart Glasses</h3>
           </div>
-        </div>
-
-        <div style={styles.metricsContainer}>
-          <div style={styles.metricRow}>
-            <span style={styles.metricLabel}>YOLO VISION</span>
-            <span style={{
-              ...styles.metricValueHighlight,
-              color: visionCategory === 'currency' ? '#F59E0B' : '#00F2FE'
-            }}>
-              {visionLabel}
-            </span>
-          </div>
-
-          <div style={styles.metricRow}>
-            <span style={styles.metricLabel}>ULTRASONIC RANGING</span>
-            <span style={{
-              ...styles.metricValue,
-              color: specsDist < 1.0 ? '#EF4444' : '#F8FAFC'
-            }}>
-              Obstacle at {specsDist.toFixed(2)}m
-            </span>
-          </div>
-
-          <div style={styles.metricRow}>
-            <span style={styles.metricLabel}>HEAD ORIENTATION</span>
-            <span style={styles.metricSubtext}>
-              Yaw: {specs?.yaw_deg || -12.5}° | Pitch: {specs?.pitch_deg || 4.2}°
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Smart Cane Card */}
-      <div className="glass-card" style={styles.card}>
-        <div style={styles.cardHeader}>
-          <div style={styles.iconContainer}>
-            <Navigation size={20} color="#38BDF8" />
-          </div>
-          <div style={styles.cardTitleSection}>
-            <span style={styles.deviceTitle}>Smart Cane</span>
-            <span style={styles.connectedBadge}>Connected</span>
+          <div style={styles.liveBadge}>
+            <div style={styles.liveDot} className="live-pulse-green" />
+            <span style={styles.liveText}>50 Hz</span>
           </div>
         </div>
 
-        <div style={styles.metricsContainer}>
-          <div style={styles.metricRow}>
-            <span style={styles.metricLabel}>ULTRASONIC PROXIMITY</span>
-            <span style={styles.metricValueHighlight}>
-              {cane?.buzzer_active ? 'Buzzer Warning (<0.8m)' : 'Active Scanning'}
-            </span>
+        <div style={styles.metricsBox}>
+          <div style={styles.metricItem}>
+            <span className="eyebrow-label" style={{ color: '#828786' }}>YOLO VISION INFERENCE</span>
+            <div style={styles.valueRow}>
+              <span style={{
+                ...styles.primaryValue,
+                color: visionCategory === 'currency' ? '#FFCD48' : '#3DDC91',
+              }}>
+                {visionLabel}
+              </span>
+            </div>
           </div>
 
-          <div style={styles.metricRow}>
-            <span style={styles.metricLabel}>IMU IMPACT ACCEL</span>
-            <span style={styles.metricValue}>
-              {cane?.amag || 9.81} m/s² {cane?.fall_flag === 1 ? '⚠️ CANDIDATE FALL' : ''}
-            </span>
+          <div style={styles.metricItem}>
+            <span className="eyebrow-label" style={{ color: '#828786' }}>ULTRASONIC RANGING</span>
+            <div style={styles.valueRow}>
+              <span style={{
+                ...styles.primaryValue,
+                color: specsDist < 1.0 ? '#FFCD48' : '#FFFFFF',
+              }}>
+                {specsDist.toFixed(2)} m
+              </span>
+              <span style={styles.unitSubtext}>Clearance</span>
+            </div>
           </div>
 
-          <div style={styles.metricRow}>
-            <span style={styles.metricLabel}>HANDLE VITALS</span>
-            <span style={styles.metricSubtext}>
-              HR: {cane?.heart_rate || 74} BPM | SpO2: {cane?.spo2 || 98}%
+          <div style={styles.metricItem}>
+            <span className="eyebrow-label" style={{ color: '#828786' }}>SPATIAL ORIENTATION</span>
+            <span style={styles.subtleMono}>
+              Yaw: {specs?.yaw_deg || -12.5}° • Pitch: {specs?.pitch_deg || 4.2}°
             </span>
           </div>
         </div>
       </div>
 
-      {/* 3. Smart Band Card */}
-      <div className="glass-card" style={styles.card}>
-        <div style={styles.cardHeader}>
-          <div style={styles.iconContainer}>
-            <Activity size={20} color="#10B981" />
+      {/* 2. Smart Cane Module Card */}
+      <div className="deep-abyss-card" style={styles.card}>
+        <div style={styles.cardTop}>
+          <div style={styles.iconBox}>
+            <Navigation size={18} color="#3DDC91" />
           </div>
-          <div style={styles.cardTitleSection}>
-            <span style={styles.deviceTitle}>Smart Band</span>
+          <div style={styles.headerText}>
+            <span className="eyebrow-label">WEARABLE NODE 02</span>
+            <h3 style={styles.deviceHeading}>Smart Cane</h3>
+          </div>
+          <div style={styles.liveBadge}>
+            <div style={styles.liveDot} className="live-pulse-green" />
+            <span style={styles.liveText}>Active</span>
+          </div>
+        </div>
+
+        <div style={styles.metricsBox}>
+          <div style={styles.metricItem}>
+            <span className="eyebrow-label" style={{ color: '#828786' }}>GROUND PROXIMITY</span>
+            <div style={styles.valueRow}>
+              <span style={{
+                ...styles.primaryValue,
+                color: cane?.buzzer_active ? '#FFCD48' : '#FFFFFF',
+              }}>
+                {caneDist.toFixed(2)} m
+              </span>
+              <span style={styles.unitSubtext}>
+                {cane?.buzzer_active ? 'Buzzer Active' : 'Normal'}
+              </span>
+            </div>
+          </div>
+
+          <div style={styles.metricItem}>
+            <span className="eyebrow-label" style={{ color: '#828786' }}>IMU ACCELERATION</span>
+            <div style={styles.valueRow}>
+              <span style={{
+                ...styles.primaryValue,
+                color: cane?.fall_flag === 1 ? '#FFCD48' : '#FFFFFF',
+              }}>
+                {cane?.amag || 9.81} m/s²
+              </span>
+              {cane?.fall_flag === 1 && (
+                <span style={{ ...styles.unitSubtext, color: '#FFCD48' }}>Flag F_cane=1</span>
+              )}
+            </div>
+          </div>
+
+          <div style={styles.metricItem}>
+            <span className="eyebrow-label" style={{ color: '#828786' }}>HANDLE BIOMETRICS</span>
+            <span style={styles.subtleMono}>
+              HR: {cane?.heart_rate || 74} BPM • SpO2: {cane?.spo2 || 98}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Smart Band Module Card */}
+      <div className="deep-abyss-card" style={styles.card}>
+        <div style={styles.cardTop}>
+          <div style={styles.iconBox}>
+            <Activity size={18} color="#3DDC91" />
+          </div>
+          <div style={styles.headerText}>
+            <span className="eyebrow-label">WEARABLE NODE 03</span>
+            <h3 style={styles.deviceHeading}>Smart Band</h3>
+          </div>
+          <div style={styles.liveBadge}>
+            <div style={{
+              ...styles.liveDot,
+              backgroundColor: isVitalsCritical ? '#FFCD48' : '#3DDC91',
+            }} className="live-pulse-green" />
             <span style={{
-              ...styles.statusBadge,
-              backgroundColor: isVitalsCritical ? 'rgba(239,68,68,0.2)' : isVitalsWarning ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)',
-              color: isVitalsCritical ? '#EF4444' : isVitalsWarning ? '#F59E0B' : '#10B981',
-              borderColor: isVitalsCritical ? '#EF4444' : isVitalsWarning ? '#F59E0B' : '#10B981'
+              ...styles.liveText,
+              color: isVitalsCritical ? '#FFCD48' : '#3DDC91',
             }}>
-              {isVitalsCritical ? 'Critical' : isVitalsWarning ? 'Warning' : 'Stable / Normal'}
+              {isVitalsCritical ? 'Critical' : isVitalsWarning ? 'Warning' : 'Nominal'}
             </span>
           </div>
         </div>
 
-        <div style={styles.metricsContainer}>
-          <div style={styles.metricRow}>
-            <span style={styles.metricLabel}>WRIST VITALS</span>
-            <span style={styles.metricValueHighlight}>
-              {bandHr} BPM | {bandSpO2}% SpO2
-            </span>
+        <div style={styles.metricsBox}>
+          <div style={styles.metricItem}>
+            <span className="eyebrow-label" style={{ color: '#828786' }}>MAX30100 BIOMETRICS</span>
+            <div style={styles.valueRow}>
+              <span style={{
+                ...styles.primaryValue,
+                color: isVitalsCritical || isVitalsWarning ? '#FFCD48' : '#3DDC91',
+              }}>
+                {bandHr} BPM
+              </span>
+              <span style={styles.unitSubtext}>• {bandSpO2}% SpO2</span>
+            </div>
           </div>
 
-          <div style={styles.metricRow}>
-            <span style={styles.metricLabel}>BMP180 ALTITUDE</span>
-            <span style={styles.metricValue}>
-              {band?.altitude_m || 120.5}m ({band?.pressure_hpa || 1013.25} hPa)
-            </span>
+          <div style={styles.metricItem}>
+            <span className="eyebrow-label" style={{ color: '#828786' }}>BAROMETRIC ALTITUDE</span>
+            <div style={styles.valueRow}>
+              <span style={styles.primaryValue}>
+                {band?.altitude_m || 120.5} m
+              </span>
+              <span style={styles.unitSubtext}>{band?.pressure_hpa || 1013} hPa</span>
+            </div>
           </div>
 
-          <div style={styles.metricRow}>
-            <span style={styles.metricLabel}>FOOTSTEPS & MOTION</span>
-            <span style={styles.metricSubtext}>
-              {band?.step_count || 1420} steps | Accel: {band?.amag || 9.79} m/s²
+          <div style={styles.metricItem}>
+            <span className="eyebrow-label" style={{ color: '#828786' }}>PEDOMETER & DYNAMICS</span>
+            <span style={styles.subtleMono}>
+              {band?.step_count || 1420} Steps • Accel: {band?.amag || 9.79} m/s²
             </span>
           </div>
         </div>
@@ -159,90 +201,102 @@ const styles = {
   gridContainer: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '16px',
-    padding: '16px 20px',
+    gap: '20px',
+    padding: '0 20px 24px 20px',
   },
   card: {
-    padding: '18px',
+    padding: '24px',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '14px',
+    gap: '16px',
+    borderRadius: '20px',
+    backgroundColor: '#0E1A19',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
   },
-  cardHeader: {
+  cardTop: {
     display: 'flex',
     flexDirection: 'row' as const,
     alignItems: 'center',
     gap: '12px',
   },
-  iconContainer: {
+  iconBox: {
     width: '38px',
     height: '38px',
     borderRadius: '10px',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: '#132322',
+    border: '1px solid rgba(61, 220, 145, 0.25)',
     display: 'flex',
-    justifyContent: 'center',
     alignItems: 'center',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
   },
-  cardTitleSection: {
+  headerText: {
+    flex: 1,
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '2px',
   },
-  deviceTitle: {
-    fontSize: '15px',
-    fontWeight: '700',
-    color: '#F8FAFC',
+  deviceHeading: {
+    fontSize: '16px',
+    fontWeight: '500',
+    color: '#FFFFFF',
+    margin: 0,
+    letterSpacing: '-0.08px',
   },
-  onlineBadge: {
+  liveBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    backgroundColor: '#132322',
+    padding: '4px 10px',
+    borderRadius: '56px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+  },
+  liveDot: {
+    width: '6px',
+    height: '6px',
+    borderRadius: '50%',
+    backgroundColor: '#3DDC91',
+  },
+  liveText: {
     fontSize: '11px',
-    color: '#00F2FE',
-    fontWeight: '600',
+    fontWeight: '500',
+    color: '#3DDC91',
+    letterSpacing: '-0.08px',
   },
-  connectedBadge: {
-    fontSize: '11px',
-    color: '#38BDF8',
-    fontWeight: '600',
-  },
-  statusBadge: {
-    fontSize: '11px',
-    fontWeight: '600',
-    padding: '2px 6px',
-    borderRadius: '6px',
-    border: '1px solid',
-    width: 'fit-content',
-  },
-  metricsContainer: {
+  metricsBox: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '10px',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    padding: '12px',
-    borderRadius: '10px',
+    gap: '12px',
+    backgroundColor: '#132322',
+    padding: '16px',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.04)',
   },
-  metricRow: {
+  metricItem: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '2px',
+    gap: '4px',
   },
-  metricLabel: {
-    fontSize: '10px',
-    color: '#64748B',
-    fontWeight: '700',
-    letterSpacing: '0.5px',
+  valueRow: {
+    display: 'flex',
+    flexDirection: 'row' as const,
+    alignItems: 'baseline',
+    gap: '6px',
   },
-  metricValue: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#F8FAFC',
+  primaryValue: {
+    fontSize: '18px',
+    fontWeight: '500',
+    color: '#FFFFFF',
+    letterSpacing: '-0.08px',
   },
-  metricValueHighlight: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#00F2FE',
-  },
-  metricSubtext: {
+  unitSubtext: {
     fontSize: '12px',
-    color: '#94A3B8',
+    color: '#828786',
+    fontWeight: '400',
+  },
+  subtleMono: {
+    fontSize: '12px',
+    color: '#828786',
+    fontFamily: 'JetBrains Mono, monospace',
   },
 };

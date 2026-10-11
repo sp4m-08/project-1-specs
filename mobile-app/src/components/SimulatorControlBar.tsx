@@ -7,169 +7,191 @@ interface SimulatorControlBarProps {
 
 export const SimulatorControlBar: React.FC<SimulatorControlBarProps> = ({ onTriggerAction }) => {
   return (
-    <div className="glass-card" style={styles.container}>
-      <div style={styles.header}>
-        <Cpu size={18} color="#00F2FE" style={{ marginRight: 6 }} />
-        <span style={styles.title}>Hardware Telemetry & Event Simulator Control Bar</span>
-      </div>
+    <div style={styles.outerWrapper}>
+      <div className="deep-abyss-card" style={styles.card}>
+        <div style={styles.header}>
+          <div style={styles.iconBox}>
+            <Cpu size={16} color="#3DDC91" />
+          </div>
+          <div>
+            <span className="eyebrow-label">EMBEDDED HARDWARE SIMULATION RIG</span>
+            <h3 style={styles.title}>Event Injector & Test Console</h3>
+          </div>
+        </div>
 
-      <div style={styles.buttonGrid}>
-        {/* Fall Triggers */}
-        <button onClick={() => onTriggerAction('CANE_FALL')} style={styles.triggerBtnAmber}>
-          <AlertTriangle size={14} style={{ marginRight: 4 }} />
-          Cane Fall (F_cane=1)
-        </button>
+        <div style={styles.buttonCluster}>
+          {/* Fall Verification Injection */}
+          <button
+            onClick={() => onTriggerAction('CANE_FALL')}
+            style={styles.pillYellow}
+          >
+            <AlertTriangle size={13} style={{ marginRight: 5 }} />
+            <span>Cane Fall (F_cane=1)</span>
+          </button>
 
-        <button onClick={() => onTriggerAction('BAND_FALL')} style={styles.triggerBtnAmber}>
-          <AlertTriangle size={14} style={{ marginRight: 4 }} />
-          Band Fall (F_band=1)
-        </button>
+          <button
+            onClick={() => onTriggerAction('BAND_FALL')}
+            style={styles.pillYellow}
+          >
+            <AlertTriangle size={13} style={{ marginRight: 5 }} />
+            <span>Band Fall (F_band=1)</span>
+          </button>
 
-        <button onClick={() => onTriggerAction('DUAL_FALL')} style={styles.triggerBtnRed}>
-          <ShieldAlert size={14} style={{ marginRight: 4 }} />
-          Dual Fall (High Confidence)
-        </button>
+          <button
+            onClick={() => onTriggerAction('DUAL_FALL')}
+            style={styles.pillAlert}
+          >
+            <ShieldAlert size={13} style={{ marginRight: 5 }} />
+            <span>Dual Impact (High Conf)</span>
+          </button>
 
-        {/* SOS Button */}
-        <button onClick={() => onTriggerAction('SOS_PRESS')} style={styles.triggerBtnSos}>
-          <AlertOctagon size={14} style={{ marginRight: 4 }} />
-          Press Band SOS Button
-        </button>
+          <button
+            onClick={() => onTriggerAction('SOS_PRESS')}
+            style={styles.pillWhiteGhost}
+          >
+            <AlertOctagon size={13} style={{ marginRight: 5 }} />
+            <span>Press SOS Button</span>
+          </button>
 
-        {/* YOLO Vision Triggers */}
-        <button onClick={() => onTriggerAction('CURRENCY_500')} style={styles.triggerBtnCyan}>
-          <DollarSign size={14} style={{ marginRight: 4 }} />
-          YOLO: 500 INR Note
-        </button>
+          {/* YOLO Object Detections */}
+          <button
+            onClick={() => onTriggerAction('CURRENCY_500')}
+            style={styles.pillDark}
+          >
+            <DollarSign size={13} color="#3DDC91" style={{ marginRight: 5 }} />
+            <span>YOLO: 500 INR</span>
+          </button>
 
-        <button onClick={() => onTriggerAction('CURRENCY_200')} style={styles.triggerBtnCyan}>
-          <DollarSign size={14} style={{ marginRight: 4 }} />
-          YOLO: 200 INR Note
-        </button>
+          <button
+            onClick={() => onTriggerAction('CURRENCY_200')}
+            style={styles.pillDark}
+          >
+            <DollarSign size={13} color="#3DDC91" style={{ marginRight: 5 }} />
+            <span>YOLO: 200 INR</span>
+          </button>
 
-        <button onClick={() => onTriggerAction('PERSON_SCAN')} style={styles.triggerBtnCyan}>
-          <Eye size={14} style={{ marginRight: 4 }} />
-          YOLO: Person Ahead
-        </button>
+          <button
+            onClick={() => onTriggerAction('PERSON_SCAN')}
+            style={styles.pillDark}
+          >
+            <Eye size={13} color="#3DDC91" style={{ marginRight: 5 }} />
+            <span>YOLO: Person Ahead</span>
+          </button>
 
-        {/* Ultrasonic & Vitals */}
-        <button onClick={() => onTriggerAction('OBSTACLE_APPROACH', 0.6)} style={styles.triggerBtnBlue}>
-          <Radio size={14} style={{ marginRight: 4 }} />
-          Obstacle Ahead (0.6m)
-        </button>
+          {/* Ultrasonic & Biometrics */}
+          <button
+            onClick={() => onTriggerAction('OBSTACLE_APPROACH', 0.6)}
+            style={styles.pillDark}
+          >
+            <Radio size={13} color="#828786" style={{ marginRight: 5 }} />
+            <span>Obstacle (0.6m)</span>
+          </button>
 
-        <button onClick={() => onTriggerAction('VITALS_SPIKE', { hr: 128, spo2: 88 })} style={styles.triggerBtnRose}>
-          <Heart size={14} style={{ marginRight: 4 }} />
-          Vitals Spike (128 BPM)
-        </button>
+          <button
+            onClick={() => onTriggerAction('VITALS_SPIKE', { hr: 128, spo2: 88 })}
+            style={styles.pillYellow}
+          >
+            <Heart size={13} style={{ marginRight: 5 }} />
+            <span>Vitals Spike (128 BPM)</span>
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 const styles = {
-  container: {
-    padding: '14px 20px',
-    margin: '0 20px 20px 20px',
+  outerWrapper: {
+    padding: '0 20px 24px 20px',
+  },
+  card: {
+    backgroundColor: '#0E1A19',
+    borderRadius: '20px',
+    padding: '24px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '10px',
+    gap: '16px',
   },
   header: {
     display: 'flex',
     flexDirection: 'row' as const,
     alignItems: 'center',
-    fontSize: '13px',
-    fontWeight: '700',
-    color: '#F8FAFC',
+    gap: '10px',
+  },
+  iconBox: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    backgroundColor: '#132322',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '1px solid rgba(61, 220, 145, 0.25)',
   },
   title: {
-    fontSize: '13px',
-    fontWeight: '700',
-    color: '#F8FAFC',
+    fontSize: '16px',
+    fontWeight: '500',
+    color: '#FFFFFF',
+    margin: 0,
+    letterSpacing: '-0.08px',
   },
-  buttonGrid: {
+  buttonCluster: {
     display: 'flex',
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
     gap: '8px',
   },
-  triggerBtnAmber: {
-    display: 'flex',
-    flexDirection: 'row' as const,
+  pillYellow: {
+    display: 'inline-flex',
     alignItems: 'center',
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    border: '1px solid rgba(245, 158, 11, 0.4)',
-    color: '#F59E0B',
-    padding: '6px 12px',
-    borderRadius: '16px',
-    fontSize: '11px',
-    fontWeight: '600',
+    backgroundColor: 'rgba(255, 205, 72, 0.12)',
+    border: '1px solid #FFCD48',
+    color: '#FFCD48',
+    borderRadius: '56px',
+    padding: '7px 16px',
+    fontSize: '12px',
+    fontWeight: '500',
     cursor: 'pointer',
+    letterSpacing: '-0.08px',
   },
-  triggerBtnRed: {
-    display: 'flex',
-    flexDirection: 'row' as const,
+  pillAlert: {
+    display: 'inline-flex',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.25)',
-    border: '1px solid #EF4444',
-    color: '#EF4444',
-    padding: '6px 12px',
-    borderRadius: '16px',
-    fontSize: '11px',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-  triggerBtnSos: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    alignItems: 'center',
-    backgroundColor: '#EF4444',
-    border: 'none',
+    backgroundColor: 'rgba(255, 205, 72, 0.25)',
+    border: '1.5px solid #FFCD48',
     color: '#FFFFFF',
-    padding: '6px 14px',
-    borderRadius: '16px',
-    fontSize: '11px',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-  triggerBtnCyan: {
-    display: 'flex',
-    flexDirection: 'row' as const,
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 242, 254, 0.12)',
-    border: '1px solid rgba(0, 242, 254, 0.3)',
-    color: '#00F2FE',
-    padding: '6px 12px',
-    borderRadius: '16px',
-    fontSize: '11px',
+    borderRadius: '56px',
+    padding: '7px 16px',
+    fontSize: '12px',
     fontWeight: '600',
     cursor: 'pointer',
+    letterSpacing: '-0.08px',
   },
-  triggerBtnBlue: {
-    display: 'flex',
-    flexDirection: 'row' as const,
+  pillWhiteGhost: {
+    display: 'inline-flex',
     alignItems: 'center',
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
-    border: '1px solid rgba(56, 189, 248, 0.3)',
-    color: '#38BDF8',
-    padding: '6px 12px',
-    borderRadius: '16px',
-    fontSize: '11px',
-    fontWeight: '600',
+    backgroundColor: 'transparent',
+    border: '1px solid #FFFFFF',
+    color: '#FFFFFF',
+    borderRadius: '56px',
+    padding: '7px 16px',
+    fontSize: '12px',
+    fontWeight: '500',
     cursor: 'pointer',
+    letterSpacing: '-0.08px',
   },
-  triggerBtnRose: {
-    display: 'flex',
-    flexDirection: 'row' as const,
+  pillDark: {
+    display: 'inline-flex',
     alignItems: 'center',
-    backgroundColor: 'rgba(244, 63, 94, 0.15)',
-    border: '1px solid rgba(244, 63, 94, 0.4)',
-    color: '#F43F5E',
-    padding: '6px 12px',
-    borderRadius: '16px',
-    fontSize: '11px',
-    fontWeight: '600',
+    backgroundColor: '#132322',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    color: '#FFFFFF',
+    borderRadius: '56px',
+    padding: '7px 16px',
+    fontSize: '12px',
+    fontWeight: '400',
     cursor: 'pointer',
+    letterSpacing: '-0.08px',
   },
 };
