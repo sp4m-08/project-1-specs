@@ -317,10 +317,15 @@ const styles = {
   contentViewport: {
     flex: 1,
     overflowY: 'auto' as const,
-    paddingBottom: '80px',
+    /* SAFE AREA FIX: Generous bottom clearance ensuring scrollable content clears the floating pill bar and mic */
+    paddingBottom: 'calc(100px + max(env(safe-area-inset-bottom, 0px), 24px))',
   },
   subviewPadding: {
-    padding: '24px 20px',
+    /* SAFE AREA FIX: Top safe area inset for subviews so category eyebrow & titles never clip status bar */
+    paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 28px) + 16px)',
+    paddingBottom: '24px',
+    paddingLeft: 'max(env(safe-area-inset-left, 0px), 20px)',
+    paddingRight: 'max(env(safe-area-inset-right, 0px), 20px)',
   },
   subviewHeader: {
     marginBottom: '20px',
@@ -378,8 +383,9 @@ const styles = {
   },
   floatingMicButton: {
     position: 'fixed' as const,
-    bottom: '76px',
-    right: '24px',
+    /* SAFE AREA FIX: Floats cleanly above elevated bottom nav bar and native gesture indicator */
+    bottom: 'calc(78px + max(env(safe-area-inset-bottom, 0px), 20px))',
+    right: '20px',
     width: '58px',
     height: '58px',
     borderRadius: '50%',

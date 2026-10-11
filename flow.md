@@ -209,3 +209,37 @@
    - Synced native Capacitor assets via `npx cap sync`.
    - Reassembled updated Android APK via `gradlew assembleDebug` with Android Studio JDK 21.
    - Refreshed [`AIoT-Assistive-Suite-debug.apk`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/AIoT-Assistive-Suite-debug.apk) (4.50 MB) at the project root.
+
+---
+
+### Prompt 20: Mobile Viewport Optimization, Safe Area Compliance & Status Bar / Gesture Bar Clearance
+
+#### User Goal / Requirement:
+- Review React Native / Capacitor mobile screen implementation where the system status bar collided with the top category tracker (`"COMMAND CONSOLE"`) and screen title (`"AIoT Assistive Suite"`), and the bottom navigation tab bar crowded the native device gesture indicator bar / home indicator.
+- Refactor layout to adhere to proper mobile standards and Obsidian Glass design tokens using `react-native-safe-area-context` dynamic insets (`insets.top`, `insets.bottom`), dynamic header padding, floating nav elevation, and generous scrollview clearance.
+
+#### Actions & Changes Made:
+1. **Viewport Meta Tag Optimization (`mobile-app/index.html`)**:
+   - Added `viewport-fit=cover` to `<meta name="viewport">` allowing edge-to-edge rendering and CSS `env(safe-area-inset-*)` support.
+   - Added `<meta name="theme-color" content="#132322">` and `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">` for seamless dark status bar integration.
+2. **Safe Area Tokens & Utilities (`mobile-app/src/index.css`)**:
+   - Declared `--safe-area-top: max(env(safe-area-inset-top, 0px), 28px)` and `--safe-area-bottom: max(env(safe-area-inset-bottom, 0px), 20px)`.
+3. **Top Status Bar & Notch Collision Resolution (`DashboardScreen.tsx`, `HeaderBar.tsx`)**:
+   - Replaced fixed top padding with dynamic safe clearance: `paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 28px) + 12px)'`.
+   - Guaranteed minimum 16px-24px clearance beneath the device status bar / camera punch hole.
+   - Preserved `"COMMAND CONSOLE"` uppercase neon eyebrow and `"AIoT Assistive Suite"` title.
+4. **Bottom Gesture Indicator Clearance (`BottomNavBar.tsx`)**:
+   - Elevated fixed bottom tab bar container with `paddingBottom: 'calc(max(env(safe-area-inset-bottom, 0px), 18px) + 6px)'` on a frosted Obsidian glass surface (`rgba(19, 35, 34, 0.95)` with `backdrop-filter: blur(16px)`).
+   - Elevated tab buttons cleanly above the Android gesture pill and iOS home indicator.
+5. **ScrollView & Floating Action Button Ergonomics (`App.tsx`)**:
+   - Adjusted `contentViewport` with `paddingBottom: 'calc(100px + max(env(safe-area-inset-bottom, 0px), 24px))'` ensuring all cards and simulator controls scroll completely into view.
+   - Elevated `floatingMicButton` to `bottom: 'calc(78px + max(env(safe-area-inset-bottom, 0px), 20px))'`.
+6. **Production React Native Component (`AuraDashboardScreen.native.tsx`)**:
+   - Implemented a complete, self-contained React Native functional component utilizing `useSafeAreaInsets()` from `react-native-safe-area-context`.
+   - Adheres strictly to the Obsidian Glass design system (`#132322`, `#0E1A19`, `#EDF7F5`, `#3DDC91`, 56px pill buttons, 60px card curvature).
+7. **Native APK Reassembly & Verification**:
+   - Recompiled production bundle with `npm run build`.
+   - Synchronized native assets via `npx cap sync`.
+   - Rebuilt debug APK via Gradle with JDK 21 (`BUILD SUCCESSFUL in 13s`).
+   - Updated standalone APK [`AIoT-Assistive-Suite-debug.apk`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/AIoT-Assistive-Suite-debug.apk) (4.46 MB) in workspace root.
+

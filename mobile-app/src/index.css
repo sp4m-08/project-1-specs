@@ -1,6 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
+  /* Mobile Safe Area Inset Tokens (Edge-to-edge status bar & gesture navigation clearance) */
+  --safe-area-top: max(env(safe-area-inset-top, 0px), 28px);
+  --safe-area-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
+  --safe-area-left: max(env(safe-area-inset-left, 0px), 0px);
+  --safe-area-right: max(env(safe-area-inset-right, 0px), 0px);
+
   /* Sauce Labs Color Tokens */
   --color-obsidian-shell: #132322;
   --color-pure-white: #ffffff;

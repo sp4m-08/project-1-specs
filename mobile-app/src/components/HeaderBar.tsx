@@ -104,6 +104,8 @@ const styles = {
     top: 0,
     zIndex: 200,
     backgroundColor: '#132322',
+    /* SAFE AREA FIX: Clear system status bar / notch (min 28px + 8px clearance) */
+    paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 28px) + 8px)',
   },
   announcementBanner: {
     backgroundColor: '#3DDC91',

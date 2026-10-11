@@ -50,12 +50,20 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onChangeT
 
 const styles = {
   navContainer: {
-    position: 'sticky' as const,
+    position: 'fixed' as const,
     bottom: 0,
+    left: 0,
+    right: 0,
     zIndex: 200,
-    backgroundColor: '#132322',
+    backgroundColor: 'rgba(19, 35, 34, 0.95)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
     borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-    padding: '10px 16px',
+    /* SAFE AREA FIX: Ensure bottom navigation clears device native gesture indicator bar */
+    paddingTop: '8px',
+    paddingBottom: 'calc(max(env(safe-area-inset-bottom, 0px), 18px) + 6px)',
+    paddingLeft: 'max(env(safe-area-inset-left, 0px), 16px)',
+    paddingRight: 'max(env(safe-area-inset-right, 0px), 16px)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',

@@ -63,8 +63,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <Zap size={20} color="#3DDC91" />
           </div>
           <div>
-            <span className="eyebrow-label">SECURE WEARABLE PLATFORM</span>
-            <h1 style={styles.appTitle}>AURA AIoT ASSISTANT</h1>
+            <span className="eyebrow-label">COMMAND CONSOLE</span>
+            <h1 style={styles.appTitle}>AIoT Assistive Suite</h1>
           </div>
         </div>
 
@@ -186,7 +186,11 @@ const styles = {
     flexDirection: 'row' as const,
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '18px 24px',
+    /* SAFE AREA FIX: Clear system status bar / notch dynamically (min 28px fallback + 12px breathing room) */
+    paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 28px) + 12px)',
+    paddingBottom: '16px',
+    paddingLeft: 'max(env(safe-area-inset-left, 0px), 20px)',
+    paddingRight: 'max(env(safe-area-inset-right, 0px), 20px)',
     backgroundColor: '#132322',
     borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
     position: 'sticky' as const,
