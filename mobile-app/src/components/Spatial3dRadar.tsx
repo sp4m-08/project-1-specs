@@ -31,8 +31,8 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
       const centerX = width / 2;
       const centerY = height / 2 + 15;
 
-      // Draw radar rings (Sauce Labs dark console aesthetic)
-      ctx.strokeStyle = 'rgba(61, 220, 145, 0.15)';
+      // Draw radar rings (Sapphire cyber-medical console aesthetic)
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
       ctx.lineWidth = 1;
       const maxRadius = Math.min(width, height) / 2 - 30;
 
@@ -43,7 +43,7 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
       }
 
       // Draw axis grid lines
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
       ctx.beginPath();
       ctx.moveTo(centerX - maxRadius, centerY);
       ctx.lineTo(centerX + maxRadius, centerY);
@@ -52,15 +52,15 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
       ctx.stroke();
 
       // Axis labels
-      ctx.fillStyle = '#828786';
+      ctx.fillStyle = '#8CA2C2';
       ctx.font = '10px Inter, sans-serif';
       ctx.fillText('FRONT (0°)', centerX - 25, centerY - maxRadius - 6);
       ctx.fillText('BACK', centerX - 14, centerY + maxRadius + 14);
       ctx.fillText('LEFT', centerX - maxRadius - 32, centerY + 4);
       ctx.fillText('RIGHT', centerX + maxRadius + 8, centerY + 4);
 
-      // Center sensor origin (Neon Pulse #3DDC91)
-      ctx.fillStyle = '#3DDC91';
+      // Center sensor origin (Electric Azure #38BDF8)
+      ctx.fillStyle = '#38BDF8';
       ctx.beginPath();
       ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
       ctx.fill();
@@ -76,12 +76,12 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
         const px = centerX + r * Math.cos(angleRad);
         const py = centerY + r * Math.sin(angleRad);
 
-        // Color coding: Signal Yellow (#FFCD48) for close, Neon Pulse (#3DDC91) for clear
-        let color = '#3DDC91';
+        // Color coding: Signal Yellow (#FFCD48) for hazard, Ice Blue (#93C5FD) for proximity, Azure (#38BDF8) for clear
+        let color = '#38BDF8';
         if (pt.distanceMm < 800) {
           color = '#FFCD48';
         } else if (pt.distanceMm < 1200) {
-          color = '#97DDBC';
+          color = '#93C5FD';
         }
 
         ctx.fillStyle = color;
@@ -123,11 +123,11 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
               <span style={styles.legendText}>Hazard (&lt;0.8m)</span>
             </div>
             <div style={styles.legendItem}>
-              <div style={{ ...styles.legendDot, backgroundColor: '#97DDBC' }} />
+              <div style={{ ...styles.legendDot, backgroundColor: '#93C5FD' }} />
               <span style={styles.legendText}>Proximity (0.8–1.2m)</span>
             </div>
             <div style={styles.legendItem}>
-              <div style={{ ...styles.legendDot, backgroundColor: '#3DDC91' }} />
+              <div style={{ ...styles.legendDot, backgroundColor: '#38BDF8' }} />
               <span style={styles.legendText}>Clear (&gt;1.2m)</span>
             </div>
           </div>
@@ -138,12 +138,15 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
         </div>
 
         <div style={styles.metaRow}>
-          <span style={styles.monoSubtext}>
-            Spherical Transform: p = d · [cos φ cos θ, cos φ sin θ, sin φ]ᵀ
-          </span>
-          <span style={styles.monoSubtext}>
-            Pitch: {pitchDeg}° • Yaw: {yawDeg}°
-          </span>
+          <div style={styles.metaBadge}>
+            <span style={styles.metaLabel}>HEAD ORIENTATION VECTOR:</span>
+            <span style={styles.metaValue}>Yaw: {yawDeg}° • Pitch: {pitchDeg}°</span>
+          </div>
+
+          <div style={styles.metaBadge}>
+            <span style={styles.metaLabel}>ACTIVE TOPOLOGY:</span>
+            <span style={styles.metaValue}>{pointCloud.length} Ultrasonic Cells</span>
+          </div>
         </div>
       </div>
     </div>
@@ -152,16 +155,17 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
 
 const styles = {
   outerWrapper: {
-    padding: '0 20px 24px 20px',
+    padding: '0 clamp(14px, 4vw, 20px) 24px clamp(14px, 4vw, 20px)',
   },
   card: {
-    backgroundColor: '#0E1A19',
+    backgroundColor: '#0F1D38',
     borderRadius: '20px',
-    padding: '24px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    padding: 'clamp(16px, 4vw, 24px)',
+    border: '1px solid rgba(56, 189, 248, 0.15)',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '16px',
+    boxShadow: '0 4px 16px rgba(2, 132, 199, 0.08)',
   },
   header: {
     display: 'flex',
@@ -182,10 +186,12 @@ const styles = {
     display: 'flex',
     flexDirection: 'row' as const,
     gap: '12px',
+    alignItems: 'center',
     flexWrap: 'wrap' as const,
   },
   legendItem: {
     display: 'flex',
+    flexDirection: 'row' as const,
     alignItems: 'center',
     gap: '6px',
   },
@@ -196,34 +202,53 @@ const styles = {
   },
   legendText: {
     fontSize: '11px',
-    color: '#828786',
-    letterSpacing: '-0.08px',
+    color: '#8CA2C2',
   },
   canvasContainer: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#070F0F',
+    padding: '10px',
+    backgroundColor: '#070D1E',
     borderRadius: '16px',
-    padding: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.06)',
+    border: '1px solid rgba(56, 189, 248, 0.12)',
+    width: '100%',
+    overflow: 'hidden',
   },
   canvas: {
     maxWidth: '100%',
     height: 'auto',
+    display: 'block',
   },
   metaRow: {
     display: 'flex',
     flexDirection: 'row' as const,
     justifyContent: 'space-between',
+    alignItems: 'center',
     flexWrap: 'wrap' as const,
-    gap: '8px',
-    borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-    paddingTop: '10px',
+    gap: '10px',
+    borderTop: '1px solid rgba(56, 189, 248, 0.1)',
+    paddingTop: '12px',
   },
-  monoSubtext: {
+  metaBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    backgroundColor: '#0B132B',
+    padding: '6px 12px',
+    borderRadius: '8px',
+    border: '1px solid rgba(56, 189, 248, 0.15)',
+  },
+  metaLabel: {
+    fontSize: '10px',
+    color: '#8CA2C2',
+    fontWeight: '500',
+    letterSpacing: '0.3px',
+  },
+  metaValue: {
     fontSize: '11px',
-    color: '#828786',
+    color: '#38BDF8',
+    fontWeight: '600',
     fontFamily: 'JetBrains Mono, monospace',
   },
 };

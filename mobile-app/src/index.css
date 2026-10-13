@@ -2,25 +2,26 @@
 
 :root {
   /* Mobile Safe Area Inset Tokens (Edge-to-edge status bar & gesture navigation clearance) */
-  --safe-area-top: max(env(safe-area-inset-top, 0px), 28px);
-  --safe-area-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
+  --safe-area-top: max(env(safe-area-inset-top, 0px), 24px);
+  --safe-area-bottom: max(env(safe-area-inset-bottom, 0px), 18px);
   --safe-area-left: max(env(safe-area-inset-left, 0px), 0px);
   --safe-area-right: max(env(safe-area-inset-right, 0px), 0px);
 
-  /* Sauce Labs Color Tokens */
-  --color-obsidian-shell: #132322;
+  /* Cyber-Medical Sapphire & Azure Blue Color Tokens */
+  --color-obsidian-shell: #0b132b;
   --color-pure-white: #ffffff;
-  --color-mint-frost: #edf7f5;
-  --color-deep-abyss: #0e1a19;
-  --color-charcoal: #070f0f;
-  --color-fog-border: #d0d3d3;
-  --color-stone-border: #b2b6b4;
-  --color-slate-text: #828786;
-  --color-graphite-fill: #424f4f;
+  --color-mint-frost: #eef6ff;
+  --color-deep-abyss: #070d1e;
+  --color-charcoal: #050914;
+  --color-fog-border: #c8d7eb;
+  --color-stone-border: #8ea5c4;
+  --color-slate-text: #8ca2c2;
+  --color-graphite-fill: #1e2e4a;
   --color-pure-black: #000000;
-  --color-neon-pulse: #3ddc91;
-  --color-mint-whisper: #97ddbc;
+  --color-neon-pulse: #38bdf8;
+  --color-mint-whisper: #93c5fd;
   --color-signal-yellow: #ffcd48;
+  --color-azure-glow: #0284c7;
 
   /* Typography */
   --font-aeonik: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -55,12 +56,12 @@
   --radius-smallelements: 10px;
 
   /* Shadows */
-  --shadow-md: rgba(0, 0, 0, 0.04) 1px 0px 9px 2px;
+  --shadow-md: rgba(2, 132, 199, 0.08) 1px 0px 12px 2px;
 
   /* Surfaces */
-  --surface-obsidian-canvas: #132322;
-  --surface-deep-card: #0e1a19;
-  --surface-mint-card: #edf7f5;
+  --surface-obsidian-canvas: #0b132b;
+  --surface-deep-card: #0f1d38;
+  --surface-mint-card: #eef6ff;
   --surface-white-panel: #ffffff;
 }
 
@@ -69,9 +70,12 @@
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
-body {
+html, body {
+  width: 100%;
+  min-height: 100%;
   background-color: var(--color-obsidian-shell);
   color: var(--color-pure-white);
   font-family: var(--font-aeonik);
@@ -80,12 +84,20 @@ body {
   line-height: var(--leading-body);
   overflow-x: hidden;
   user-select: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive Content Max-Width Constrainer for Tablet/Desktop */
+.responsive-app-container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
 }
 
 /* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: var(--color-deep-abyss);
@@ -98,11 +110,11 @@ body {
   background: var(--color-neon-pulse);
 }
 
-/* Eyebrow Label (Sauce Labs signature structural anchor) */
+/* Eyebrow Label */
 .eyebrow-label {
   font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.45px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--color-neon-pulse);
   display: block;
@@ -110,27 +122,28 @@ body {
 
 .eyebrow-label-dark {
   font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.45px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--color-obsidian-shell);
   display: block;
 }
 
-/* Sauce Labs Card Classes */
+/* Card Classes */
 .deep-abyss-card {
-  background-color: var(--color-deep-abyss);
+  background-color: var(--surface-deep-card);
   border-radius: var(--radius-cards);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: border-color 0.2s ease;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .deep-abyss-card:hover {
-  border-color: rgba(61, 220, 145, 0.25);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 4px 20px rgba(2, 132, 199, 0.15);
 }
 
 .mint-frost-card {
-  background-color: var(--color-mint-frost);
+  background-color: var(--surface-mint-card);
   color: var(--color-obsidian-shell);
   border-radius: var(--radius-largecards);
   box-shadow: var(--shadow-md);
@@ -143,24 +156,22 @@ body {
   align-items: center;
   justify-content: center;
   background-color: var(--color-neon-pulse);
-  color: var(--color-obsidian-shell);
+  color: #070d1e;
   border: none;
   border-radius: var(--radius-buttons);
-  padding: 10px 22px;
+  padding: 10px 20px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.08px;
   cursor: pointer;
-  transition: transform 0.15s ease, filter 0.15s ease;
-}
-
-.pill-btn-primary:hover {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
+  min-height: 42px;
+  touch-action: manipulation;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
 }
 
 .pill-btn-primary:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 /* Ghost Pill Button */
@@ -170,17 +181,20 @@ body {
   justify-content: center;
   background-color: transparent;
   color: var(--color-pure-white);
-  border: 1.5px solid var(--color-pure-white);
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
   border-radius: var(--radius-buttons);
-  padding: 9px 20px;
-  font-size: 14px;
-  font-weight: 400;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  min-height: 42px;
+  touch-action: manipulation;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.pill-btn-ghost:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.pill-btn-ghost:active {
+  transform: scale(0.98);
+  background-color: rgba(56, 189, 248, 0.15);
 }
 
 /* Secondary Dark Pill Button */
@@ -188,40 +202,139 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-deep-abyss);
+  background-color: var(--surface-deep-card);
   color: var(--color-slate-text);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
   border-radius: var(--radius-buttons);
   padding: 8px 16px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
+  min-height: 38px;
+  touch-action: manipulation;
   transition: all 0.15s ease;
 }
 
-.pill-btn-dark:hover {
-  color: var(--color-pure-white);
+.pill-btn-dark:active {
+  transform: scale(0.98);
   border-color: var(--color-neon-pulse);
+  color: var(--color-pure-white);
 }
 
-/* Green Live Signal Pulse */
-@keyframes neon-pulse-anim {
+/* Vibrant Blue Live Signal Pulse */
+@keyframes blue-pulse-anim {
   0% {
-    box-shadow: 0 0 0 0 rgba(61, 220, 145, 0.7);
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 8px rgba(61, 220, 145, 0);
+    box-shadow: 0 0 0 8px rgba(56, 189, 248, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(61, 220, 145, 0);
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
   }
 }
 
+.live-pulse-blue,
 .live-pulse-green {
-  animation: neon-pulse-anim 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  animation: blue-pulse-anim 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-/* Typography styles */
 .mono-code {
   font-family: var(--font-mono);
+}
+
+/* ========================================================================= */
+/* Mobile First Responsive Breakpoints                                      */
+/* ========================================================================= */
+
+@media (max-width: 768px) {
+  :root {
+    --radius-largecards: 28px;
+    --radius-cards: 18px;
+    --text-body: 15px;
+  }
+
+  .mint-frost-card {
+    border-radius: 28px !important;
+  }
+
+  .deep-abyss-card {
+    border-radius: 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --radius-largecards: 22px;
+    --radius-cards: 16px;
+    --text-body: 14px;
+    --text-heading-sm: 22px;
+    --text-heading: 26px;
+  }
+
+  .mint-frost-card {
+    border-radius: 22px !important;
+  }
+
+  .deep-abyss-card {
+    border-radius: 16px !important;
+  }
+
+  .pill-btn-primary {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .pill-btn-ghost {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+}
+
+/* ========================================================================= */
+/* Mobile App Native Animations & Transitions                               */
+/* ========================================================================= */
+
+@keyframes spin-radar {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes toast-slide-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-slide-down {
+  animation: toast-slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-transition-view {
+  animation: fade-slide-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Mobile Touch Micro-Interactions */
+button:active {
+  transform: scale(0.97);
 }

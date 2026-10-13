@@ -49,7 +49,7 @@ export const FallFusionMonitor: React.FC<FallFusionMonitorProps> = ({
                 </span>
               </div>
               <button onClick={onCancelAlert} className="pill-btn-primary" style={styles.cancelAlarmPill}>
-                <X size={16} color="#132322" style={{ marginRight: 6 }} />
+                <X size={16} color="#0B132B" style={{ marginRight: 6 }} />
                 <span>Cancel False Alarm</span>
               </button>
             </div>
@@ -66,7 +66,7 @@ export const FallFusionMonitor: React.FC<FallFusionMonitorProps> = ({
     );
   }
 
-  // Signature Sauce Labs Light Content Card (Mint Frost #edf7f5, 60px radius)
+  // Signature Ice Blue Frost Content Card (#eef6ff, 60px radius)
   return (
     <div style={styles.wrapper}>
       <div className="mint-frost-card" style={styles.mintCard}>
@@ -80,7 +80,7 @@ export const FallFusionMonitor: React.FC<FallFusionMonitorProps> = ({
           </div>
 
           <div style={styles.statusPill}>
-            <ShieldCheck size={16} color="#132322" />
+            <ShieldCheck size={16} color="#0B132B" />
             <span style={styles.statusPillText}>Nominal State</span>
           </div>
         </div>
@@ -113,12 +113,12 @@ const styles = {
     padding: '0 20px 24px 20px',
   },
   mintCard: {
-    backgroundColor: '#EDF7F5',
-    color: '#132322',
+    backgroundColor: '#EEF6FF', // Ice Blue Frost surface
+    color: '#0B132B',
     borderRadius: '60px',
     padding: '36px 32px',
-    boxShadow: 'rgba(0, 0, 0, 0.04) 1px 0px 9px 2px',
-    border: '1px solid #D0D3D3',
+    boxShadow: 'rgba(2, 132, 199, 0.08) 1px 0px 12px 2px',
+    border: '1px solid #C8D7EB',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '24px',
@@ -141,14 +141,14 @@ const styles = {
   mintHeadline: {
     fontSize: '22px',
     fontWeight: '500',
-    color: '#132322',
+    color: '#0B132B',
     letterSpacing: '-0.08px',
     margin: 0,
     lineHeight: '1.2',
   },
   mintBody: {
     fontSize: '14px',
-    color: '#424F4F',
+    color: '#2C4263',
     lineHeight: '1.45',
     margin: 0,
     maxWidth: '560px',
@@ -157,16 +157,17 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    backgroundColor: '#3DDC91',
-    color: '#132322',
+    backgroundColor: '#38BDF8',
+    color: '#0B132B',
     borderRadius: '56px',
     padding: '8px 16px',
-    fontWeight: '500',
+    fontWeight: '600',
     fontSize: '13px',
     alignSelf: 'flex-start' as const,
+    boxShadow: '0 2px 10px rgba(56, 189, 248, 0.25)',
   },
   statusPillText: {
-    color: '#132322',
+    color: '#0B132B',
     fontWeight: '600',
   },
   mintSpecsGrid: {
@@ -174,7 +175,7 @@ const styles = {
     gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
     gap: '12px',
     paddingTop: '16px',
-    borderTop: '1px solid #D0D3D3',
+    borderTop: '1px solid #C8D7EB',
   },
   specTile: {
     backgroundColor: '#FFFFFF',
@@ -183,32 +184,33 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '4px',
-    border: '1px solid #D0D3D3',
+    border: '1px solid #C8D7EB',
   },
   specLabel: {
     fontSize: '9px',
-    fontWeight: '500',
-    color: '#828786',
+    fontWeight: '600',
+    color: '#64748B',
     letterSpacing: '0.45px',
     textTransform: 'uppercase' as const,
   },
   specValue: {
     fontSize: '14px',
     fontWeight: '600',
-    color: '#132322',
+    color: '#0B132B',
     letterSpacing: '-0.08px',
   },
   alertContainer: {
     padding: '0 20px 24px 20px',
   },
   alertCard: {
-    backgroundColor: '#0E1A19',
+    backgroundColor: '#0F1D38',
     border: '2px solid #FFCD48',
     borderRadius: '24px',
     padding: '24px',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '16px',
+    boxShadow: '0 4px 20px rgba(255, 205, 72, 0.15)',
   },
   alertHeader: {
     display: 'flex',
@@ -244,7 +246,7 @@ const styles = {
     lineHeight: '1.4',
   },
   sosCountdownBox: {
-    backgroundColor: '#132322',
+    backgroundColor: '#0B132B',
     border: '1px solid rgba(255, 205, 72, 0.4)',
     borderRadius: '16px',
     padding: '16px',
@@ -269,7 +271,7 @@ const styles = {
   escalationDispatch: {
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: '#070F0F',
+    backgroundColor: '#070D1E',
     border: '1px solid #FFCD48',
     padding: '12px 16px',
     borderRadius: '12px',

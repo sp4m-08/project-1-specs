@@ -1,5 +1,6 @@
 import React from 'react';
 import { LayoutGrid, Layers, ShieldCheck, Settings } from 'lucide-react';
+import { mobileUx } from '../utils/haptics';
 
 export type ActiveTab = 'dashboard' | 'spatial' | 'security' | 'settings';
 
@@ -16,6 +17,14 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onChangeT
     { id: 'settings', label: 'Config', icon: Settings },
   ];
 
+  const handleTabClick = (tabId: ActiveTab) => {
+    if (tabId !== activeTab) {
+      mobileUx.triggerHaptic('light');
+      mobileUx.playTone('switch');
+    }
+    onChangeTab(tabId);
+  };
+
   return (
     <nav style={styles.navContainer}>
       <div style={styles.pillTrack}>
@@ -26,14 +35,14 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onChangeT
           return (
             <button
               key={tab.id}
-              onClick={() => onChangeTab(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
               style={{
                 ...styles.tabPill,
-                backgroundColor: isActive ? '#3DDC91' : 'transparent',
-                color: isActive ? '#132322' : '#828786',
+                backgroundColor: isActive ? '#38BDF8' : 'transparent',
+                color: isActive ? '#070D1E' : '#8CA2C2',
               }}
             >
-              <Icon size={16} color={isActive ? '#132322' : '#828786'} />
+              <Icon size={16} color={isActive ? '#070D1E' : '#8CA2C2'} />
               <span style={{
                 ...styles.tabLabel,
                 fontWeight: isActive ? '600' : '400',
@@ -55,10 +64,10 @@ const styles = {
     left: 0,
     right: 0,
     zIndex: 200,
-    backgroundColor: 'rgba(19, 35, 34, 0.95)',
+    backgroundColor: 'rgba(11, 19, 43, 0.95)',
     backdropFilter: 'blur(16px)',
     WebkitBackdropFilter: 'blur(16px)',
-    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+    borderTop: '1px solid rgba(56, 189, 248, 0.15)',
     /* SAFE AREA FIX: Ensure bottom navigation clears device native gesture indicator bar */
     paddingTop: '8px',
     paddingBottom: 'calc(max(env(safe-area-inset-bottom, 0px), 18px) + 6px)',
@@ -73,29 +82,33 @@ const styles = {
     flexDirection: 'row' as const,
     alignItems: 'center',
     gap: '6px',
-    backgroundColor: '#0E1A19',
+    backgroundColor: '#070D1E',
     padding: '4px',
     borderRadius: '56px',
-    border: '1px solid rgba(255, 255, 255, 0.06)',
+    border: '1px solid rgba(56, 189, 248, 0.2)',
     width: '100%',
     maxWidth: '520px',
     justifyContent: 'space-between',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
   },
   tabPill: {
     display: 'flex',
     flexDirection: 'row' as const,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '6px',
+    gap: '5px',
     flex: 1,
-    padding: '8px 12px',
+    padding: '8px clamp(4px, 1.8vw, 12px)',
     borderRadius: '56px',
     border: 'none',
     cursor: 'pointer',
+    minHeight: '40px',
+    touchAction: 'manipulation' as const,
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   tabLabel: {
-    fontSize: '12px',
+    fontSize: 'clamp(10px, 2.5vw, 12px)',
     letterSpacing: '-0.08px',
+    whiteSpace: 'nowrap' as const,
   },
 };

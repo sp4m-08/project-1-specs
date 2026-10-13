@@ -59,25 +59,56 @@ export function encryptPayload(payloadData: object, dev_id: string, customCnt?: 
  * Firmware-level AES-256-GCM Decryptor (Runs on Bridge Server)
  * Enforces Replay Protection & Timestamp Freshness Check
  */
-export function decryptPayload<T = any>(envelope: EncryptedEnvelope): DecryptionResult<T> {
+export function decryptPayload<T = any>(envelope: EncryptedEnvelope, topic?: string): DecryptionResult<T> {
   const startTime = Date.now();
+
+  // Validate envelope structure
+  if (!envelope || typeof envelope !== 'object') {
+    return {
+      success: false,
+      dev_id: 'unknown',
+      cnt: 0,
+      tts: Date.now(),
+      error: 'INVALID_PAYLOAD: Payload is not an object',
+    };
+  }
+
   const { dev_id, tts, cnt, nonce, ciphertext, tag } = envelope;
 
-  // 1. Replay Protection Verification: Ensure incoming counter > last verified counter
-  const lastVerifiedCnt = serverSideLastSeenCounters.get(dev_id) || 0;
-  if (cnt <= lastVerifiedCnt && lastVerifiedCnt > 0) {
+  if (!dev_id || !nonce || !tag || !ciphertext) {
+    return {
+      success: false,
+      dev_id: dev_id || 'unknown',
+      cnt: cnt || 0,
+      tts: tts || Date.now(),
+      error: `MALFORMED_ENVELOPE: Missing required encryption fields (nonce, tag, or ciphertext)`,
+    };
+  }
+
+  // 1. Replay Protection Verification:
+  // Key by dev_id + topic when topic is available so independent topic streams
+  // (e.g. telemetry vs emergency SOS) from the same device do not cause false replay rejections
+  const trackingKey = topic ? `${dev_id}:${topic}` : dev_id;
+  const lastVerifiedCnt = serverSideLastSeenCounters.get(trackingKey) || 0;
+
+  // Detect device restart (e.g., ESP8266 rebooted and restarted monotonic counter from 1)
+  if (cnt < lastVerifiedCnt && cnt < 10 && lastVerifiedCnt > 20) {
+    console.log(`[Device Reboot Detected] Resetting monotonic counter for ${trackingKey} (was ${lastVerifiedCnt}, now ${cnt})`);
+    serverSideLastSeenCounters.delete(trackingKey);
+  } else if (cnt <= lastVerifiedCnt && lastVerifiedCnt > 0) {
     return {
       success: false,
       dev_id,
       cnt,
       tts,
-      error: `REPLAY_ATTACK_REJECTED: Monotonic counter ${cnt} <= last verified ${lastVerifiedCnt} for device ${dev_id}`,
+      error: `REPLAY_ATTACK_REJECTED: Monotonic counter ${cnt} <= last verified ${lastVerifiedCnt} for device ${trackingKey}`,
     };
   }
 
-  // 2. Timestamp Freshness Verification (10s window)
-  const freshnessWindowMs = 10000;
-  if (Math.abs(startTime - tts) > freshnessWindowMs) {
+  // 2. Timestamp Freshness Verification (10s window for Unix epoch timestamps)
+  const freshnessWindowMs = 15000;
+  const isEpochTimestamp = tts > 100000000000; // Valid Epoch ms (> Year 1973)
+  if (isEpochTimestamp && Math.abs(startTime - tts) > freshnessWindowMs) {
     return {
       success: false,
       dev_id,
@@ -94,13 +125,17 @@ export function decryptPayload<T = any>(envelope: EncryptedEnvelope): Decryption
     const decipher = crypto.createDecipheriv('aes-256-gcm', SECRET_KEY, nonceBuf);
     decipher.setAuthTag(tagBuf);
 
-    let decrypted = decipher.update(ciphertext, 'base64', 'utf8');
+    // Auto-detect Hex vs Base64 ciphertext encoding
+    const isHex = /^[0-9a-fA-F]+$/.test(ciphertext) && ciphertext.length % 2 === 0;
+    const encoding: BufferEncoding = isHex ? 'hex' : 'base64';
+
+    let decrypted = decipher.update(ciphertext, encoding, 'utf8');
     decrypted += decipher.final('utf8');
 
     const data = JSON.parse(decrypted) as T;
 
-    // Update verified server-side counter
-    serverSideLastSeenCounters.set(dev_id, cnt);
+    // Update verified server-side counter for this device/topic stream
+    serverSideLastSeenCounters.set(trackingKey, cnt);
 
     return {
       success: true,

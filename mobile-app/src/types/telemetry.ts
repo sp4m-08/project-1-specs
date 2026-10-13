@@ -17,6 +17,12 @@ export interface DecryptionLog {
   latencyMs?: number;
 }
 
+export interface DeviceLastSeen {
+  specs: number | null;
+  cane: number | null;
+  band: number | null;
+}
+
 export interface SpecsTelemetry {
   dev_id: string;
   timestamp: number;
@@ -24,6 +30,8 @@ export interface SpecsTelemetry {
   pitch_deg: number;
   yaw_deg: number;
   battery_pct: number;
+  lastPublished?: number;
+  receivedAt?: number;
 }
 
 export interface SpecsVision {
@@ -37,6 +45,8 @@ export interface SpecsVision {
     position?: string;
   }>;
   audio_announcement: string;
+  lastPublished?: number;
+  receivedAt?: number;
 }
 
 export interface CaneTelemetry {
@@ -49,6 +59,8 @@ export interface CaneTelemetry {
   fall_flag: number;
   heart_rate: number;
   spo2: number;
+  lastPublished?: number;
+  receivedAt?: number;
 }
 
 export interface BandTelemetry {
@@ -63,6 +75,8 @@ export interface BandTelemetry {
   altitude_m: number;
   step_count: number;
   sos_flag: number;
+  lastPublished?: number;
+  receivedAt?: number;
 }
 
 export interface FallAlertState {
@@ -94,6 +108,7 @@ export interface ChatMessage {
   sender: 'user' | 'assistant';
   text: string;
   timestamp: number;
+  modelUsed?: string;
   dataCard?: {
     title: string;
     type: 'hr_trend' | 'safety_summary' | 'obstacle_summary' | 'fall_log';

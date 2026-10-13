@@ -1,0 +1,11 @@
+{
+  "name": "aiot-assistive-suite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Secure AIoT Assistive Wearables System",
+  "scripts": {
+    "install:all": "npm --prefix server install && npm --prefix mobile-app install",
+    "server": "npm --prefix server run dev",
+    "dashboard": "npm --prefix mobile-app run dev"
+  }
+}

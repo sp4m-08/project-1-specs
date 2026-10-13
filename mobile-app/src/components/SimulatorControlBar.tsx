@@ -11,7 +11,7 @@ export const SimulatorControlBar: React.FC<SimulatorControlBarProps> = ({ onTrig
       <div className="deep-abyss-card" style={styles.card}>
         <div style={styles.header}>
           <div style={styles.iconBox}>
-            <Cpu size={16} color="#3DDC91" />
+            <Cpu size={16} color="#38BDF8" />
           </div>
           <div>
             <span className="eyebrow-label">EMBEDDED HARDWARE SIMULATION RIG</span>
@@ -58,7 +58,7 @@ export const SimulatorControlBar: React.FC<SimulatorControlBarProps> = ({ onTrig
             onClick={() => onTriggerAction('CURRENCY_500')}
             style={styles.pillDark}
           >
-            <DollarSign size={13} color="#3DDC91" style={{ marginRight: 5 }} />
+            <DollarSign size={13} color="#38BDF8" style={{ marginRight: 5 }} />
             <span>YOLO: 500 INR</span>
           </button>
 
@@ -66,7 +66,7 @@ export const SimulatorControlBar: React.FC<SimulatorControlBarProps> = ({ onTrig
             onClick={() => onTriggerAction('CURRENCY_200')}
             style={styles.pillDark}
           >
-            <DollarSign size={13} color="#3DDC91" style={{ marginRight: 5 }} />
+            <DollarSign size={13} color="#38BDF8" style={{ marginRight: 5 }} />
             <span>YOLO: 200 INR</span>
           </button>
 
@@ -74,7 +74,7 @@ export const SimulatorControlBar: React.FC<SimulatorControlBarProps> = ({ onTrig
             onClick={() => onTriggerAction('PERSON_SCAN')}
             style={styles.pillDark}
           >
-            <Eye size={13} color="#3DDC91" style={{ marginRight: 5 }} />
+            <Eye size={13} color="#38BDF8" style={{ marginRight: 5 }} />
             <span>YOLO: Person Ahead</span>
           </button>
 
@@ -83,7 +83,7 @@ export const SimulatorControlBar: React.FC<SimulatorControlBarProps> = ({ onTrig
             onClick={() => onTriggerAction('OBSTACLE_APPROACH', 0.6)}
             style={styles.pillDark}
           >
-            <Radio size={13} color="#828786" style={{ marginRight: 5 }} />
+            <Radio size={13} color="#8CA2C2" style={{ marginRight: 5 }} />
             <span>Obstacle (0.6m)</span>
           </button>
 
@@ -102,16 +102,17 @@ export const SimulatorControlBar: React.FC<SimulatorControlBarProps> = ({ onTrig
 
 const styles = {
   outerWrapper: {
-    padding: '0 20px 24px 20px',
+    padding: '0 clamp(14px, 4vw, 20px) 24px clamp(14px, 4vw, 20px)',
   },
   card: {
-    backgroundColor: '#0E1A19',
+    backgroundColor: '#0F1D38',
     borderRadius: '20px',
-    padding: '24px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    padding: 'clamp(16px, 4vw, 24px)',
+    border: '1px solid rgba(56, 189, 248, 0.15)',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '16px',
+    boxShadow: '0 4px 16px rgba(2, 132, 199, 0.08)',
   },
   header: {
     display: 'flex',
@@ -123,11 +124,11 @@ const styles = {
     width: '32px',
     height: '32px',
     borderRadius: '8px',
-    backgroundColor: '#132322',
+    backgroundColor: '#0B132B',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: '1px solid rgba(61, 220, 145, 0.25)',
+    border: '1px solid rgba(56, 189, 248, 0.3)',
   },
   title: {
     fontSize: '16px',
@@ -184,8 +185,8 @@ const styles = {
   pillDark: {
     display: 'inline-flex',
     alignItems: 'center',
-    backgroundColor: '#132322',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.2)',
     color: '#FFFFFF',
     borderRadius: '56px',
     padding: '7px 16px',
@@ -193,5 +194,6 @@ const styles = {
     fontWeight: '400',
     cursor: 'pointer',
     letterSpacing: '-0.08px',
+    transition: 'border-color 0.15s ease',
   },
 };

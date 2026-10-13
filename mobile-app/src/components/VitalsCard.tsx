@@ -16,8 +16,8 @@ interface SparklinePoint {
 }
 
 /**
- * VitalsCard — Live Vitals Panel (Light Content Card #edf7f5, 60px radius)
- * Alternates with dark tiles for signature Obsidian Glass luminance rhythm.
+ * VitalsCard — Live Vitals Panel (Ice Blue Frost Content Card #eef6ff, 60px radius)
+ * Alternates with dark tiles for signature Sapphire Glass luminance rhythm.
  * Real-time thresholds:
  * - Normal: 60-100 BPM / >= 95% SpO2
  * - Warning: 50-60 or 100-120 BPM / 90-94% SpO2
@@ -67,7 +67,7 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({
           </div>
 
           <div style={styles.statusPillDark}>
-            <Activity size={15} color="#132322" />
+            <Activity size={15} color="#0B132B" />
             <span style={styles.statusPillText}>Telemetry Trace Active</span>
           </div>
         </div>
@@ -98,7 +98,7 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({
           <div style={styles.metricCard}>
             <div style={styles.metricTop}>
               <div style={styles.iconCircleTeal}>
-                <Activity size={18} color="#0D9488" />
+                <Activity size={18} color="#0284C7" />
               </div>
               <span style={styles.metricName}>BLOOD OXYGEN (SpO2)</span>
             </div>
@@ -114,39 +114,37 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({
             </div>
           </div>
 
-          {/* Environmental & Altitude Telemetry Display */}
+          {/* Environmental Sensing (BMP280) */}
           <div style={styles.metricCard}>
             <div style={styles.metricTop}>
               <div style={styles.iconCircleBlue}>
                 <Compass size={18} color="#2563EB" />
               </div>
-              <span style={styles.metricName}>BMP280 ENVIRONMENTAL</span>
+              <span style={styles.metricName}>BAROMETRIC & ALTITUDE</span>
             </div>
 
             <div style={styles.envGrid}>
               <div style={styles.envItem}>
                 <span style={styles.envLabel}>ALTITUDE</span>
-                <span style={styles.envValue}>{altitudeM.toFixed(1)} m</span>
+                <span style={styles.envValue}>{altitudeM} m</span>
               </div>
-
               <div style={styles.envItem}>
-                <span style={styles.envLabel}>BARO PRESSURE</span>
-                <span style={styles.envValue}>{pressureHpa.toFixed(1)} hPa</span>
+                <span style={styles.envLabel}>PRESSURE</span>
+                <span style={styles.envValue}>{pressureHpa} hPa</span>
               </div>
-
               <div style={styles.envItem}>
-                <span style={styles.envLabel}>BODY TEMP</span>
-                <span style={styles.envValue}>{temperatureC.toFixed(1)} °C</span>
+                <span style={styles.envLabel}>TEMPERATURE</span>
+                <span style={styles.envValue}>{temperatureC}°C</span>
               </div>
             </div>
 
             <div style={styles.normalEnvPill}>
-              <span>Atmospheric Baseline Nominal</span>
+              <span>BMP280 Calibrated</span>
             </div>
           </div>
         </div>
 
-        {/* Live Sparkline Trace */}
+        {/* Real-Time Waveform Trace Sparkline */}
         <div style={styles.sparklineBox}>
           <div style={styles.sparklineHeader}>
             <span style={styles.sparklineTitle}>HEART RATE REAL-TIME WAVEFORM TRACE (BPM)</span>
@@ -157,22 +155,22 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({
             <AreaChart data={trendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="mintGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#132322" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#132322" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#38BDF8" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#38BDF8" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="time" hide />
               <YAxis domain={[50, 130]} hide />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#132322',
-                  borderColor: '#D0D3D3',
+                  backgroundColor: '#0B132B',
+                  borderColor: '#93C5FD',
                   borderRadius: '10px',
                   color: '#FFFFFF',
                   fontSize: '11px',
                 }}
               />
-              <Area type="monotone" dataKey="hr" stroke="#132322" strokeWidth={2} fillOpacity={1} fill="url(#mintGrad)" />
+              <Area type="monotone" dataKey="hr" stroke="#0284C7" strokeWidth={2.5} fillOpacity={1} fill="url(#mintGrad)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -183,18 +181,18 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({
 
 const styles = {
   sectionWrapper: {
-    padding: '0 20px 28px 20px',
+    padding: '0 clamp(14px, 4vw, 20px) 28px clamp(14px, 4vw, 20px)',
   },
   card: {
-    backgroundColor: '#EDF7F5', // Mint Frost signature surface
-    color: '#132322',
-    borderRadius: '60px', // Exact 60px large card radius
-    padding: '36px 32px',
-    boxShadow: 'rgba(0, 0, 0, 0.04) 1px 0px 9px 2px',
-    border: '1px solid #D0D3D3',
+    backgroundColor: '#EEF6FF', // Ice Blue Frost signature surface
+    color: '#0B132B',
+    borderRadius: 'var(--radius-largecards)',
+    padding: 'clamp(20px, 4.5vw, 36px) clamp(16px, 4.5vw, 32px)',
+    boxShadow: 'rgba(2, 132, 199, 0.08) 1px 0px 12px 2px',
+    border: '1px solid #C8D7EB',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '24px',
+    gap: '20px',
   },
   cardHeader: {
     display: 'flex',
@@ -207,13 +205,13 @@ const styles = {
   headline: {
     fontSize: '22px',
     fontWeight: '500',
-    color: '#132322',
+    color: '#0B132B',
     letterSpacing: '-0.08px',
     margin: '4px 0 0 0',
   },
   subhead: {
     fontSize: '14px',
-    color: '#424F4F',
+    color: '#2C4263',
     margin: '4px 0 0 0',
     maxWidth: '600px',
     lineHeight: '1.45',
@@ -222,27 +220,28 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    backgroundColor: '#3DDC91',
-    color: '#132322',
+    backgroundColor: '#38BDF8',
+    color: '#0B132B',
     borderRadius: '56px',
     padding: '7px 16px',
+    boxShadow: '0 2px 10px rgba(56, 189, 248, 0.25)',
   },
   statusPillText: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#132322',
+    color: '#0B132B',
     letterSpacing: '-0.08px',
   },
   metricsRow: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
     gap: '16px',
   },
   metricCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: '24px',
     padding: '22px',
-    border: '1px solid #D0D3D3',
+    border: '1px solid #C8D7EB',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '10px',
@@ -266,7 +265,7 @@ const styles = {
     width: '32px',
     height: '32px',
     borderRadius: '10px',
-    backgroundColor: 'rgba(13, 148, 136, 0.1)',
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -283,7 +282,7 @@ const styles = {
   metricName: {
     fontSize: '10px',
     fontWeight: '600',
-    color: '#424F4F',
+    color: '#2C4263',
     letterSpacing: '0.45px',
   },
   largeNumRow: {
@@ -295,14 +294,14 @@ const styles = {
   largeNum: {
     fontSize: '40px',
     fontWeight: '600',
-    color: '#132322',
+    color: '#0B132B',
     letterSpacing: '-0.08px',
     lineHeight: '1.05',
   },
   largeUnit: {
     fontSize: '16px',
     fontWeight: '500',
-    color: '#828786',
+    color: '#64748B',
   },
   thresholdBadge: {
     display: 'inline-flex',
@@ -333,21 +332,21 @@ const styles = {
   envLabel: {
     fontSize: '8px',
     fontWeight: '600',
-    color: '#828786',
+    color: '#64748B',
     letterSpacing: '0.3px',
   },
   envValue: {
     fontSize: '13px',
     fontWeight: '600',
-    color: '#132322',
+    color: '#0B132B',
   },
   normalEnvPill: {
-    backgroundColor: '#EDF7F5',
+    backgroundColor: '#E0F2FE',
     padding: '4px 10px',
     borderRadius: '56px',
     fontSize: '10px',
-    fontWeight: '500',
-    color: '#424F4F',
+    fontWeight: '600',
+    color: '#1E3A8A',
     width: 'fit-content',
     marginTop: 'auto',
   },
@@ -355,7 +354,7 @@ const styles = {
     backgroundColor: '#FFFFFF',
     borderRadius: '24px',
     padding: '16px 20px',
-    border: '1px solid #D0D3D3',
+    border: '1px solid #C8D7EB',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '8px',
@@ -369,11 +368,11 @@ const styles = {
   sparklineTitle: {
     fontSize: '10px',
     fontWeight: '600',
-    color: '#424F4F',
+    color: '#2C4263',
     letterSpacing: '0.45px',
   },
   sparklineLegend: {
     fontSize: '10px',
-    color: '#828786',
+    color: '#64748B',
   },
 };

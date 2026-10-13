@@ -48,7 +48,7 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
         <div style={styles.modalHeader}>
           <div style={styles.headerLeft}>
             <div style={styles.botIconBadge}>
-              <Bot size={18} color="#3DDC91" />
+              <Bot size={18} color="#38BDF8" />
             </div>
             <div>
               <span className="eyebrow-label">INTELLIGENCE CONSOLE</span>
@@ -57,7 +57,7 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
           </div>
 
           <button onClick={onClose} style={styles.closeBtn} title="Close Assistant">
-            <X size={18} color="#828786" />
+            <X size={18} color="#8CA2C2" />
           </button>
         </div>
 
@@ -67,7 +67,7 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
             onClick={() => onSendMessage("How was my father's heart rate over the last hour?")}
             style={styles.suggestionPill}
           >
-            <Heart size={12} color="#3DDC91" style={{ marginRight: 6 }} />
+            <Heart size={12} color="#38BDF8" style={{ marginRight: 6 }} />
             <span>Father's HR history</span>
           </button>
 
@@ -75,7 +75,7 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
             onClick={() => onSendMessage("Any safety alerts I should know about?")}
             style={styles.suggestionPill}
           >
-            <ShieldCheck size={12} color="#3DDC91" style={{ marginRight: 6 }} />
+            <ShieldCheck size={12} color="#38BDF8" style={{ marginRight: 6 }} />
             <span>Safety alerts summary</span>
           </button>
 
@@ -83,7 +83,7 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
             onClick={() => onSendMessage("Show obstacle map summary")}
             style={styles.suggestionPill}
           >
-            <Eye size={12} color="#3DDC91" style={{ marginRight: 6 }} />
+            <Eye size={12} color="#38BDF8" style={{ marginRight: 6 }} />
             <span>Obstacle map summary</span>
           </button>
         </div>
@@ -98,14 +98,14 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
                 style={{
                   ...styles.bubble,
                   alignSelf: isUser ? 'flex-end' : 'flex-start',
-                  backgroundColor: isUser ? '#132322' : '#0E1A19',
-                  borderColor: isUser ? 'rgba(255, 255, 255, 0.12)' : 'rgba(61, 220, 145, 0.25)',
+                  backgroundColor: isUser ? '#0B132B' : '#070D1E',
+                  borderColor: isUser ? 'rgba(56, 189, 248, 0.2)' : 'rgba(56, 189, 248, 0.35)',
                 }}
               >
                 <div style={styles.bubbleHeader}>
                   <span style={{
                     ...styles.senderLabel,
-                    color: isUser ? '#828786' : '#3DDC91',
+                    color: isUser ? '#8CA2C2' : '#38BDF8',
                   }}>
                     {isUser ? 'USER PROMPT' : 'AURA COGNITIVE AGENT'}
                   </span>
@@ -119,7 +119,7 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
                 {msg.dataCard && (
                   <div style={styles.dataCard}>
                     <div style={styles.cardHeaderRow}>
-                      <Sparkles size={14} color="#3DDC91" style={{ marginRight: 6 }} />
+                      <Sparkles size={14} color="#38BDF8" style={{ marginRight: 6 }} />
                       <span style={styles.cardHeaderTitle}>{msg.dataCard.title}</span>
                     </div>
 
@@ -132,20 +132,12 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
                               <div style={{
                                 ...styles.barFill,
                                 height: `${(pt.value / 130) * 40}px`,
-                                backgroundColor: pt.value > 85 ? '#FFCD48' : '#3DDC91',
+                                backgroundColor: pt.value > 85 ? '#FFCD48' : '#38BDF8',
                               }} />
                               <span style={styles.barTime}>{pt.time}</span>
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
-
-                    {msg.dataCard.correlatedEvent && (
-                      <div style={styles.correlationRow}>
-                        <span style={styles.correlationText}>
-                          <strong>Correlation:</strong> {msg.dataCard.correlatedEvent}
-                        </span>
                       </div>
                     )}
                   </div>
@@ -155,18 +147,19 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
           })}
         </div>
 
-        {/* Bottom Input Area */}
-        <div style={styles.inputArea}>
+        {/* Input Bar */}
+        <div style={styles.inputBar}>
           <button
             onClick={handleVoiceTrigger}
             style={{
-              ...styles.voiceBtn,
-              backgroundColor: isRecording ? '#FFCD48' : '#132322',
-              color: isRecording ? '#132322' : '#3DDC91',
+              ...styles.micBtn,
+              backgroundColor: isRecording ? '#38BDF8' : '#0B132B',
+              borderColor: '#38BDF8',
+              color: isRecording ? '#070D1E' : '#38BDF8',
             }}
-            title="Voice Query"
+            className={isRecording ? 'live-pulse-blue' : ''}
           >
-            <Mic size={16} />
+            <Mic size={18} />
           </button>
 
           <input
@@ -174,12 +167,12 @@ export const AuraAiChatbotModal: React.FC<AuraAiChatbotModalProps> = ({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={isRecording ? "Listening to voice input..." : "Ask Aura AI about vitals, falls, or obstacles..."}
+            placeholder={isRecording ? 'Listening...' : 'Type clinical query or prompt...'}
             style={styles.textInput}
           />
 
-          <button onClick={handleSend} className="pill-btn-primary" style={styles.sendPill}>
-            <Send size={15} color="#132322" />
+          <button onClick={handleSend} className="pill-btn-primary" style={styles.sendBtn}>
+            <Send size={15} color="#070D1E" />
           </button>
         </div>
       </div>
@@ -194,46 +187,48 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(7, 15, 15, 0.85)',
-    backdropFilter: 'blur(10px)',
-    zIndex: 300,
+    backgroundColor: 'rgba(7, 13, 30, 0.75)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '16px',
+    zIndex: 300,
+    padding: '20px',
   },
   modalCard: {
+    backgroundColor: '#0F1D38',
+    borderRadius: '24px',
     width: '100%',
     maxWidth: '560px',
-    height: '640px',
-    backgroundColor: '#070F0F',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '24px',
+    height: '620px',
+    maxHeight: '90vh',
     display: 'flex',
     flexDirection: 'column' as const,
+    border: '1px solid rgba(56, 189, 248, 0.2)',
+    boxShadow: '0 20px 48px rgba(0, 0, 0, 0.6)',
     padding: '24px',
-    gap: '16px',
-    boxShadow: 'rgba(0, 0, 0, 0.5) 0 20px 50px',
   },
   modalHeader: {
     display: 'flex',
     flexDirection: 'row' as const,
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-    paddingBottom: '14px',
+    paddingBottom: '16px',
+    borderBottom: '1px solid rgba(56, 189, 248, 0.15)',
   },
   headerLeft: {
     display: 'flex',
+    flexDirection: 'row' as const,
     alignItems: 'center',
-    gap: '10px',
+    gap: '12px',
   },
   botIconBadge: {
-    width: '34px',
-    height: '34px',
-    borderRadius: '10px',
-    backgroundColor: '#132322',
-    border: '1px solid rgba(61, 220, 145, 0.3)',
+    width: '38px',
+    height: '38px',
+    borderRadius: '12px',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.35)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -242,43 +237,47 @@ const styles = {
     fontSize: '17px',
     fontWeight: '500',
     color: '#FFFFFF',
-    letterSpacing: '-0.08px',
     margin: 0,
+    letterSpacing: '-0.08px',
   },
   closeBtn: {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    padding: '4px',
+    padding: '6px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   quickPillRow: {
     display: 'flex',
     flexDirection: 'row' as const,
     gap: '8px',
+    padding: '12px 0',
     overflowX: 'auto' as const,
-    paddingBottom: '4px',
+    borderBottom: '1px solid rgba(56, 189, 248, 0.1)',
   },
   suggestionPill: {
     display: 'inline-flex',
     alignItems: 'center',
-    backgroundColor: '#132322',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.2)',
     borderRadius: '56px',
     padding: '6px 14px',
-    fontSize: '12px',
-    color: '#FFFFFF',
-    cursor: 'pointer',
+    fontSize: '11px',
+    color: '#8CA2C2',
     whiteSpace: 'nowrap' as const,
+    cursor: 'pointer',
     letterSpacing: '-0.08px',
-    transition: 'border-color 0.15s ease',
   },
   chatStream: {
     flex: 1,
+    overflowY: 'auto' as const,
+    padding: '16px 0',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '12px',
-    overflowY: 'auto' as const,
-    paddingRight: '4px',
+    gap: '14px',
   },
   bubble: {
     maxWidth: '85%',
@@ -291,7 +290,6 @@ const styles = {
   },
   bubbleHeader: {
     display: 'flex',
-    flexDirection: 'row' as const,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
@@ -302,24 +300,24 @@ const styles = {
     textTransform: 'uppercase' as const,
   },
   bubbleTime: {
-    fontSize: '10px',
-    color: '#828786',
+    fontSize: '9px',
+    color: '#64748B',
   },
   bubbleText: {
-    fontSize: '14px',
+    fontSize: '13px',
     color: '#FFFFFF',
     lineHeight: '1.45',
     margin: 0,
   },
   dataCard: {
-    backgroundColor: '#070F0F',
-    border: '1px solid rgba(61, 220, 145, 0.2)',
+    backgroundColor: '#0B132B',
     borderRadius: '14px',
     padding: '12px',
-    marginTop: '6px',
+    border: '1px solid rgba(56, 189, 248, 0.2)',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '8px',
+    gap: '10px',
+    marginTop: '4px',
   },
   cardHeaderRow: {
     display: 'flex',
@@ -328,7 +326,7 @@ const styles = {
   cardHeaderTitle: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#3DDC91',
+    color: '#38BDF8',
   },
   trendCluster: {
     display: 'flex',
@@ -336,79 +334,72 @@ const styles = {
     gap: '6px',
   },
   trendLabel: {
-    fontSize: '10px',
-    color: '#828786',
+    fontSize: '9px',
+    color: '#8CA2C2',
     fontFamily: 'JetBrains Mono, monospace',
+    letterSpacing: '0.45px',
   },
   barTrace: {
     display: 'flex',
     flexDirection: 'row' as const,
     alignItems: 'flex-end',
     gap: '10px',
-    height: '50px',
-    paddingTop: '6px',
+    height: '45px',
+    paddingTop: '5px',
   },
   barUnit: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
-    gap: '3px',
+    gap: '2px',
     flex: 1,
   },
   barFill: {
     width: '100%',
-    maxWidth: '16px',
+    maxWidth: '14px',
     borderRadius: '4px 4px 0 0',
   },
   barTime: {
     fontSize: '8px',
-    color: '#828786',
+    color: '#8CA2C2',
   },
-  correlationRow: {
-    backgroundColor: '#132322',
-    padding: '6px 10px',
-    borderRadius: '8px',
-    border: '1px solid rgba(255, 255, 255, 0.06)',
-  },
-  correlationText: {
-    fontSize: '11px',
-    color: '#D0D3D3',
-  },
-  inputArea: {
+  inputBar: {
     display: 'flex',
     flexDirection: 'row' as const,
     alignItems: 'center',
-    gap: '8px',
-    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+    gap: '10px',
+    borderTop: '1px solid rgba(56, 189, 248, 0.15)',
     paddingTop: '14px',
   },
-  voiceBtn: {
-    width: '40px',
-    height: '40px',
+  micBtn: {
+    width: '42px',
+    height: '42px',
     borderRadius: '56px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    border: '1px solid',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
+    flexShrink: 0,
   },
   textInput: {
     flex: 1,
-    backgroundColor: '#132322',
-    border: '1px solid rgba(255, 255, 255, 0.12)',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.25)',
     borderRadius: '56px',
     padding: '10px 18px',
     color: '#FFFFFF',
     fontSize: '13px',
     outline: 'none',
   },
-  sendPill: {
-    width: '40px',
-    height: '40px',
+  sendBtn: {
+    width: '42px',
+    height: '42px',
     borderRadius: '56px',
     padding: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
 };

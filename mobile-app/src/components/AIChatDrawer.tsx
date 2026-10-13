@@ -35,6 +35,47 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
   };
 
   const handleVoiceTrigger = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        setIsListening(true);
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results?.[0]?.[0]?.transcript;
+          setIsListening(false);
+          if (transcript && transcript.trim()) {
+            setInputText(transcript);
+            onSendMessage(transcript.trim());
+          }
+        };
+
+        recognition.onerror = (event: any) => {
+          console.warn('[SpeechRecognition Error]:', event.error);
+          setIsListening(false);
+          fallbackToSampleQuery();
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognition.start();
+        return;
+      } catch (err) {
+        console.warn('[SpeechRecognition init error]:', err);
+      }
+    }
+
+    fallbackToSampleQuery();
+  };
+
+  const fallbackToSampleQuery = () => {
     setIsListening(true);
     const cannedVoiceQueries = [
       "How was my father's heart rate over the last hour?",
@@ -46,7 +87,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
     setTimeout(() => {
       setIsListening(false);
       onSendMessage(pick);
-    }, 1200);
+    }, 1000);
   };
 
   return (
@@ -56,16 +97,16 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
         <div style={styles.drawerHeader}>
           <div style={styles.headerTitleGroup}>
             <div style={styles.botIconCircle}>
-              <Bot size={20} color="#3DDC91" />
+              <Bot size={20} color="#38BDF8" />
             </div>
             <div>
-              <span className="eyebrow-label">AURA COGNITIVE AGENT • SENSOR FUSION AI</span>
+              <span className="eyebrow-label">AURA COGNITIVE AGENT • POWERED BY GEMINI</span>
               <h3 style={styles.drawerTitle}>Patient Intelligence Assistant</h3>
             </div>
           </div>
 
           <button onClick={onClose} style={styles.closeBtn} title="Dismiss Drawer">
-            <X size={20} color="#828786" />
+            <X size={20} color="#8CA2C2" />
           </button>
         </div>
 
@@ -75,7 +116,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             onClick={() => onSendMessage("How was my father's heart rate over the last hour?")}
             style={styles.suggestionPill}
           >
-            <Heart size={12} color="#3DDC91" style={{ marginRight: 6 }} />
+            <Heart size={12} color="#38BDF8" style={{ marginRight: 6 }} />
             <span>Father's HR over last hour</span>
           </button>
 
@@ -83,7 +124,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             onClick={() => onSendMessage("Any safety alerts I should know about?")}
             style={styles.suggestionPill}
           >
-            <ShieldCheck size={12} color="#3DDC91" style={{ marginRight: 6 }} />
+            <ShieldCheck size={12} color="#38BDF8" style={{ marginRight: 6 }} />
             <span>Safety alerts check</span>
           </button>
 
@@ -91,7 +132,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             onClick={() => onSendMessage("Summarize current obstacle detections from Smart Glasses")}
             style={styles.suggestionPill}
           >
-            <Eye size={12} color="#3DDC91" style={{ marginRight: 6 }} />
+            <Eye size={12} color="#38BDF8" style={{ marginRight: 6 }} />
             <span>Obstacle detections summary</span>
           </button>
         </div>
@@ -106,16 +147,18 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                 style={{
                   ...styles.bubbleContainer,
                   alignSelf: isUser ? 'flex-end' : 'flex-start',
-                  backgroundColor: isUser ? '#132322' : '#0E1A19',
-                  borderColor: isUser ? 'rgba(255, 255, 255, 0.12)' : 'rgba(61, 220, 145, 0.25)',
+                  backgroundColor: isUser ? '#0B132B' : '#070D1E',
+                  borderColor: isUser ? 'rgba(56, 189, 248, 0.2)' : 'rgba(56, 189, 248, 0.35)',
                 }}
               >
                 <div style={styles.bubbleHeader}>
                   <span style={{
                     ...styles.senderTag,
-                    color: isUser ? '#828786' : '#3DDC91',
+                    color: isUser ? '#8CA2C2' : '#38BDF8',
                   }}>
-                    {isUser ? 'USER VOICE/TEXT PROMPT' : 'AURA CLINICAL ENGINE'}
+                    {isUser
+                      ? 'USER VOICE/TEXT PROMPT'
+                      : (msg.modelUsed ? `AURA AI • ${msg.modelUsed.toUpperCase()}` : 'AURA AI • GEMINI')}
                   </span>
                   <span style={styles.timestamp}>
                     {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -128,7 +171,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                 {msg.dataCard && (
                   <div style={styles.dataCardContainer}>
                     <div style={styles.dataCardTitleRow}>
-                      <Sparkles size={14} color="#3DDC91" style={{ marginRight: 6 }} />
+                      <Sparkles size={14} color="#38BDF8" style={{ marginRight: 6 }} />
                       <span style={styles.dataCardTitle}>{msg.dataCard.title}</span>
                     </div>
 
@@ -138,14 +181,16 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                           1-HOUR HR TREND (AVG: {msg.dataCard.averageHr} BPM)
                         </span>
                         <div style={styles.barTrace}>
-                          {msg.dataCard.hrTrend1h.map((pt, idx) => (
+                          {msg.dataCard.hrTrend1h.map((point, idx) => (
                             <div key={idx} style={styles.barUnit}>
-                              <div style={{
-                                ...styles.barFill,
-                                height: `${(pt.value / 130) * 44}px`,
-                                backgroundColor: pt.value > 85 ? '#FFCD48' : '#3DDC91',
-                              }} />
-                              <span style={styles.barLabel}>{pt.time}</span>
+                              <div
+                                style={{
+                                  ...styles.barFill,
+                                  height: `${Math.min(point.value * 0.45, 45)}px`,
+                                  backgroundColor: point.value > 85 ? '#FFCD48' : '#38BDF8',
+                                }}
+                              />
+                              <span style={styles.barLabel}>{point.time}</span>
                             </div>
                           ))}
                         </div>
@@ -154,9 +199,9 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
 
                     {msg.dataCard.correlatedEvent && (
                       <div style={styles.eventCorrelationBox}>
-                        <Link2 size={14} color="#FFCD48" style={{ marginRight: 6, flexShrink: 0 }} />
+                        <Link2 size={12} color="#38BDF8" style={{ marginRight: 6, flexShrink: 0 }} />
                         <span style={styles.eventCorrelationText}>
-                          <strong>Contextual Event Correlation:</strong> {msg.dataCard.correlatedEvent}
+                          {msg.dataCard.correlatedEvent}
                         </span>
                       </div>
                     )}
@@ -173,13 +218,13 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             onClick={handleVoiceTrigger}
             style={{
               ...styles.micCircleBtn,
-              backgroundColor: isListening ? '#FFCD48' : '#132322',
-              borderColor: isListening ? '#FFCD48' : 'rgba(255, 255, 255, 0.12)',
-              color: isListening ? '#132322' : '#3DDC91',
+              backgroundColor: isListening ? '#38BDF8' : '#0B132B',
+              borderColor: '#38BDF8',
             }}
-            title="Voice Query Input"
+            className={isListening ? 'live-pulse-blue' : ''}
+            title="Voice input (Microphone)"
           >
-            <Mic size={18} />
+            <Mic size={18} color={isListening ? '#070D1E' : '#38BDF8'} />
           </button>
 
           <input
@@ -187,12 +232,17 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={isListening ? "Listening to voice query..." : "Ask Aura AI about vitals, falls, or obstacles..."}
+            placeholder={isListening ? 'Listening to voice query...' : 'Ask Aura AI about telemetry, falls, or obstacles...'}
             style={styles.chatInputField}
           />
 
-          <button onClick={handleSend} className="pill-btn-primary" style={styles.sendActionBtn}>
-            <Send size={16} color="#132322" />
+          <button
+            onClick={handleSend}
+            className="pill-btn-primary"
+            style={styles.sendActionBtn}
+            title="Send query"
+          >
+            <Send size={16} color="#070D1E" />
           </button>
         </div>
       </div>
@@ -207,34 +257,35 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(7, 15, 15, 0.88)',
-    backdropFilter: 'blur(12px)',
-    zIndex: 350,
+    backgroundColor: 'rgba(7, 13, 30, 0.75)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    zIndex: 300,
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '20px',
+    justifyContent: 'flex-end',
   },
   drawerCard: {
     width: '100%',
-    maxWidth: '580px',
-    height: '660px',
-    backgroundColor: '#070F0F', // Charcoal darkest surface
-    borderRadius: '28px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    maxWidth: '480px',
+    height: '100%',
+    backgroundColor: '#0F1D38',
+    borderLeft: '1px solid rgba(56, 189, 248, 0.2)',
+    boxShadow: '-8px 0 32px rgba(0, 0, 0, 0.5)',
     display: 'flex',
     flexDirection: 'column' as const,
-    padding: '24px',
-    gap: '16px',
-    boxShadow: '0 30px 70px rgba(0, 0, 0, 0.8)',
+    /* SAFE AREA FIX: Clearance for notch at top and gesture navigation at bottom */
+    paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 28px) + 12px)',
+    paddingBottom: 'calc(max(env(safe-area-inset-bottom, 0px), 20px) + 12px)',
+    paddingLeft: 'max(env(safe-area-inset-left, 0px), 20px)',
+    paddingRight: 'max(env(safe-area-inset-right, 0px), 20px)',
   },
   drawerHeader: {
     display: 'flex',
     flexDirection: 'row' as const,
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-    paddingBottom: '14px',
+    paddingBottom: '16px',
+    borderBottom: '1px solid rgba(56, 189, 248, 0.15)',
   },
   headerTitleGroup: {
     display: 'flex',
@@ -246,14 +297,15 @@ const styles = {
     width: '38px',
     height: '38px',
     borderRadius: '12px',
-    backgroundColor: '#132322',
-    border: '1px solid rgba(61, 220, 145, 0.3)',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.35)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    boxShadow: '0 2px 10px rgba(56, 189, 248, 0.2)',
   },
   drawerTitle: {
-    fontSize: '17px',
+    fontSize: '16px',
     fontWeight: '500',
     color: '#FFFFFF',
     margin: '2px 0 0 0',
@@ -263,39 +315,44 @@ const styles = {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    padding: '4px',
+    padding: '6px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pillsRow: {
     display: 'flex',
     flexDirection: 'row' as const,
     gap: '8px',
+    padding: '12px 0',
     overflowX: 'auto' as const,
-    paddingBottom: '4px',
+    borderBottom: '1px solid rgba(56, 189, 248, 0.1)',
   },
   suggestionPill: {
     display: 'inline-flex',
     alignItems: 'center',
-    backgroundColor: '#132322',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.2)',
     borderRadius: '56px',
-    padding: '6px 14px',
-    fontSize: '12px',
-    color: '#FFFFFF',
-    cursor: 'pointer',
+    padding: '6px 12px',
+    fontSize: '11px',
+    color: '#8CA2C2',
     whiteSpace: 'nowrap' as const,
-    letterSpacing: '-0.08px',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
   },
   messageList: {
     flex: 1,
+    overflowY: 'auto' as const,
+    padding: '16px 0',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '12px',
-    overflowY: 'auto' as const,
-    paddingRight: '6px',
+    gap: '14px',
   },
   bubbleContainer: {
-    maxWidth: '88%',
-    padding: '14px 18px',
+    maxWidth: '85%',
+    padding: '14px 16px',
     borderRadius: '20px',
     border: '1px solid',
     display: 'flex',
@@ -304,29 +361,28 @@ const styles = {
   },
   bubbleHeader: {
     display: 'flex',
-    flexDirection: 'row' as const,
     justifyContent: 'space-between',
     alignItems: 'center',
+    fontSize: '9px',
+    letterSpacing: '0.45px',
   },
   senderTag: {
-    fontSize: '9px',
     fontWeight: '600',
-    letterSpacing: '0.45px',
     textTransform: 'uppercase' as const,
   },
   timestamp: {
-    fontSize: '10px',
-    color: '#828786',
+    color: '#64748B',
+    fontSize: '9px',
   },
   messageText: {
-    fontSize: '14px',
-    color: '#FFFFFF',
+    fontSize: '13px',
     lineHeight: '1.45',
+    color: '#FFFFFF',
     margin: 0,
   },
   dataCardContainer: {
-    backgroundColor: '#070F0F',
-    border: '1px solid rgba(61, 220, 145, 0.25)',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.2)',
     borderRadius: '16px',
     padding: '14px',
     marginTop: '6px',
@@ -341,7 +397,7 @@ const styles = {
   dataCardTitle: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#3DDC91',
+    color: '#38BDF8',
   },
   trendBlock: {
     display: 'flex',
@@ -350,7 +406,7 @@ const styles = {
   },
   trendCaption: {
     fontSize: '9px',
-    color: '#828786',
+    color: '#8CA2C2',
     fontFamily: 'JetBrains Mono, monospace',
     letterSpacing: '0.45px',
   },
@@ -376,11 +432,11 @@ const styles = {
   },
   barLabel: {
     fontSize: '8px',
-    color: '#828786',
+    color: '#8CA2C2',
   },
   eventCorrelationBox: {
-    backgroundColor: '#132322',
-    border: '1px solid rgba(255, 205, 72, 0.3)',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.25)',
     borderRadius: '10px',
     padding: '8px 12px',
     display: 'flex',
@@ -388,7 +444,7 @@ const styles = {
   },
   eventCorrelationText: {
     fontSize: '11px',
-    color: '#EDF7F5',
+    color: '#EEF6FF',
     lineHeight: '1.35',
   },
   inputArea: {
@@ -396,7 +452,7 @@ const styles = {
     flexDirection: 'row' as const,
     alignItems: 'center',
     gap: '10px',
-    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+    borderTop: '1px solid rgba(56, 189, 248, 0.15)',
     paddingTop: '14px',
   },
   micCircleBtn: {
@@ -412,8 +468,8 @@ const styles = {
   },
   chatInputField: {
     flex: 1,
-    backgroundColor: '#132322',
-    border: '1px solid rgba(255, 255, 255, 0.12)',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.25)',
     borderRadius: '56px',
     padding: '12px 20px',
     color: '#FFFFFF',

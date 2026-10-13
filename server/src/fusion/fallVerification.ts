@@ -30,6 +30,7 @@ export class CrossDeviceFallVerifier {
   private sosCountdownTimer: NodeJS.Timeout | null = null;
   private sosIntervalTimer: NodeJS.Timeout | null = null;
   private alertListeners: FallAlertCallback[] = [];
+  private lastCancelledTimestamp = 0;
 
   private readonly FUSION_WINDOW_MS = 3000; // Delta t = 3 s
   private readonly SOS_RESPONSE_SEC = 30;   // T_resp = 30 s
@@ -81,6 +82,27 @@ export class CrossDeviceFallVerifier {
       }
     }
 
+    // If user recently cancelled/dismissed a fall warning, suppress new single-device triggers for 15s cooldown
+    if (Date.now() - this.lastCancelledTimestamp < 15000 && !(hasCane && hasBand)) {
+      return this.activeAlert || {
+        id: `idle_${Date.now()}`,
+        status: 'IDLE',
+        confidence: 'NONE',
+        message: 'System Armed. Fall alert standing down.',
+        timestamp: Date.now(),
+      };
+    }
+
+    // If already in HIGH_CONFIDENCE_ALERT, do not demote to single-device warning
+    if (this.activeAlert?.status === 'HIGH_CONFIDENCE_ALERT') {
+      return this.activeAlert;
+    }
+
+    // If already in LOW_CONFIDENCE_WARNING countdown, do not reset the 30s timer
+    if (this.activeAlert?.status === 'LOW_CONFIDENCE_WARNING' && this.sosCountdownTimer) {
+      return this.activeAlert;
+    }
+
     // Rule 2: Single-Device Candidate Fall -> Issue Low-Confidence Warning & Start 30s SOS Window
     this.clearSosTimers();
     let remainingSec = this.SOS_RESPONSE_SEC;
@@ -128,21 +150,41 @@ export class CrossDeviceFallVerifier {
   }
 
   /**
-   * User cancels false-alarm via SOS button press
+   * User cancels false-alarm via SOS button press or UI dismiss
    */
-  public cancelFallWarning(source: string = 'SOS_BUTTON'): FallAlertState | null {
-    if (this.activeAlert && this.activeAlert.status === 'LOW_CONFIDENCE_WARNING') {
-      this.clearSosTimers();
-      const cancelledState: FallAlertState = {
-        ...this.activeAlert,
-        status: 'CANCELLED_BY_USER',
-        sosWindowRemainingSec: 0,
-        message: `SUPPRESSED: Fall alert cancelled by user via ${source}. Alarm standing down.`,
-      };
-      this.notifyListeners(cancelledState);
-      return cancelledState;
-    }
-    return null;
+  public cancelFallWarning(source: string = 'SOS_BUTTON'): FallAlertState {
+    this.clearSosTimers();
+    this.lastCancelledTimestamp = Date.now();
+    this.lastCaneEvent = null;
+    this.lastBandEvent = null;
+    const cancelledState: FallAlertState = {
+      id: `cancel_${Date.now()}`,
+      status: 'IDLE',
+      confidence: 'NONE',
+      message: `SUPPRESSED: Fall alert cancelled by user via ${source}. Alarm standing down.`,
+      timestamp: Date.now(),
+    };
+    this.notifyListeners(cancelledState);
+    return cancelledState;
+  }
+
+  /**
+   * Resets active fall state to IDLE and arms system
+   */
+  public resetAlertToIdle(): FallAlertState {
+    this.clearSosTimers();
+    this.lastCancelledTimestamp = Date.now();
+    this.lastCaneEvent = null;
+    this.lastBandEvent = null;
+    const idleState: FallAlertState = {
+      id: `idle_${Date.now()}`,
+      status: 'IDLE',
+      confidence: 'NONE',
+      message: 'System Armed. No active fall alerts.',
+      timestamp: Date.now(),
+    };
+    this.notifyListeners(idleState);
+    return idleState;
   }
 
   private clearSosTimers() {

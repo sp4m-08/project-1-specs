@@ -23,7 +23,7 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
   onCancelAlert,
   onCloseModal,
 }) => {
-  if (!isOpen || !alertState || alertState.status === 'IDLE') return null;
+  if (!isOpen || !alertState || alertState.status === 'IDLE' || alertState.status === 'CANCELLED_BY_USER') return null;
 
   const status = alertState.status;
   const isHighAlert = status === 'HIGH_CONFIDENCE_ALERT';
@@ -31,9 +31,25 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
   const isLowWarning = status === 'LOW_CONFIDENCE_WARNING';
   const remainingSeconds = alertState.sosWindowRemainingSec ?? 30;
 
+  const handleClose = () => {
+    if (onCloseModal) {
+      onCloseModal();
+    } else {
+      onCancelAlert();
+    }
+  };
+
   return (
-    <div style={styles.modalOverlay}>
-      <div style={styles.modalContainer}>
+    <div
+      style={styles.modalOverlay}
+      onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        style={styles.modalContainer}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Top Header Badge */}
         <div style={styles.headerRow}>
           <div style={styles.titleWithIcon}>
@@ -52,8 +68,18 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
             </div>
           </div>
 
-          <div style={styles.confidencePill}>
-            <span>{isHighAlert ? 'High Confidence (Dual)' : 'Low Confidence (Single)'}</span>
+          <div style={styles.headerRightActions}>
+            <div style={styles.confidencePill}>
+              <span>{isHighAlert ? 'High Confidence (Dual)' : 'Low Confidence (Single)'}</span>
+            </div>
+            <button
+              onClick={handleClose}
+              style={styles.closeIconButton}
+              title="Close and return to dashboard"
+              aria-label="Close"
+            >
+              <X size={18} color="#FFFFFF" />
+            </button>
           </div>
         </div>
 
@@ -73,19 +99,19 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
             </div>
             <div style={styles.metricItem}>
               <span style={styles.metricLabel}>CANE FLAG (F_CANE)</span>
-              <span style={{ ...styles.metricVal, color: isHighAlert ? '#FFCD48' : '#3DDC91' }}>
+              <span style={{ ...styles.metricVal, color: isHighAlert ? '#FFCD48' : '#38BDF8' }}>
                 {isHighAlert ? '1 (Active)' : 'Checked'}
               </span>
             </div>
             <div style={styles.metricItem}>
               <span style={styles.metricLabel}>BAND FLAG (F_BAND)</span>
-              <span style={{ ...styles.metricVal, color: isHighAlert ? '#FFCD48' : '#3DDC91' }}>
+              <span style={{ ...styles.metricVal, color: isHighAlert ? '#FFCD48' : '#38BDF8' }}>
                 {isHighAlert ? '1 (Active)' : 'Checked'}
               </span>
             </div>
             <div style={styles.metricItem}>
               <span style={styles.metricLabel}>AES-256 INTEGRITY</span>
-              <span style={{ ...styles.metricVal, color: '#3DDC91' }}>Verified Tag</span>
+              <span style={{ ...styles.metricVal, color: '#38BDF8' }}>Verified Tag</span>
             </div>
           </div>
         </div>
@@ -105,14 +131,25 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
               </span>
             </div>
 
-            <button
-              onClick={onCancelAlert}
-              className="pill-btn-primary"
-              style={styles.cancelPillButton}
-            >
-              <X size={18} color="#132322" style={{ marginRight: 8 }} />
-              <span>Cancel False Alarm (SOS Dismiss)</span>
-            </button>
+            <div style={styles.buttonCluster}>
+              <button
+                onClick={onCancelAlert}
+                className="pill-btn-primary"
+                style={styles.cancelPillButton}
+              >
+                <CheckCircle size={18} color="#0B132B" style={{ marginRight: 8 }} />
+                <span>Cancel False Alarm (SOS Dismiss)</span>
+              </button>
+
+              <button
+                onClick={handleClose}
+                className="pill-btn-dark"
+                style={styles.backToDashboardButton}
+              >
+                <X size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <span>Back to Dashboard</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -140,15 +177,14 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
                 <span>Caregiver Arrived (Acknowledge Alert)</span>
               </button>
 
-              {onCloseModal && (
-                <button
-                  onClick={onCloseModal}
-                  className="pill-btn-dark"
-                  style={styles.dismissPill}
-                >
-                  <span>Close Window</span>
-                </button>
-              )}
+              <button
+                onClick={handleClose}
+                className="pill-btn-dark"
+                style={styles.dismissPill}
+              >
+                <X size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <span>Close Window</span>
+              </button>
             </div>
           </div>
         )}
@@ -164,21 +200,24 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(7, 15, 15, 0.88)',
+    backgroundColor: 'rgba(7, 13, 30, 0.88)',
     backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
     zIndex: 400,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '20px',
+    padding: 'clamp(10px, 3vw, 20px)',
   },
   modalContainer: {
     width: '100%',
     maxWidth: '560px',
-    backgroundColor: '#0E1A19',
-    borderRadius: '32px',
+    maxHeight: '92vh',
+    overflowY: 'auto' as const,
+    backgroundColor: '#0F1D38',
+    borderRadius: 'clamp(20px, 4vw, 32px)',
     border: '1.5px solid #FFCD48',
-    padding: '32px',
+    padding: 'clamp(18px, 4vw, 32px)',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '20px',
@@ -197,6 +236,7 @@ const styles = {
     flexDirection: 'row' as const,
     alignItems: 'center',
     gap: '12px',
+    flex: '1 1 auto',
   },
   alertHeadline: {
     fontSize: '18px',
@@ -204,6 +244,25 @@ const styles = {
     color: '#FFFFFF',
     letterSpacing: '-0.08px',
     margin: '2px 0 0 0',
+  },
+  headerRightActions: {
+    display: 'flex',
+    flexDirection: 'row' as const,
+    alignItems: 'center',
+    gap: '10px',
+  },
+  closeIconButton: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    color: '#FFFFFF',
+    transition: 'all 0.2s ease',
   },
   confidencePill: {
     backgroundColor: 'rgba(255, 205, 72, 0.15)',
@@ -214,11 +273,34 @@ const styles = {
     fontSize: '11px',
     fontWeight: '600',
   },
+  buttonCluster: {
+    display: 'flex',
+    flexDirection: 'row' as const,
+    gap: '12px',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap' as const,
+    width: '100%',
+    marginTop: '6px',
+  },
+  backToDashboardButton: {
+    padding: '12px 24px',
+    borderRadius: '56px',
+    fontSize: '14px',
+    fontWeight: '600',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.35)',
+    color: '#FFFFFF',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+  },
   detailCard: {
-    backgroundColor: '#132322',
+    backgroundColor: '#0B132B',
     borderRadius: '20px',
     padding: '18px 20px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    border: '1px solid rgba(56, 189, 248, 0.15)',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '14px',
@@ -233,7 +315,7 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
     gap: '10px',
-    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+    borderTop: '1px solid rgba(56, 189, 248, 0.15)',
     paddingTop: '12px',
   },
   metricItem: {
@@ -244,7 +326,7 @@ const styles = {
   metricLabel: {
     fontSize: '8px',
     fontWeight: '600',
-    color: '#828786',
+    color: '#8CA2C2',
     letterSpacing: '0.45px',
     textTransform: 'uppercase' as const,
   },
@@ -269,7 +351,7 @@ const styles = {
     height: '84px',
     borderRadius: '50%',
     border: '3px solid #FFCD48',
-    backgroundColor: '#132322',
+    backgroundColor: '#0B132B',
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
@@ -284,7 +366,7 @@ const styles = {
   timerSublabel: {
     fontSize: '7px',
     fontWeight: '700',
-    color: '#828786',
+    color: '#8CA2C2',
     letterSpacing: '0.5px',
   },
   countdownExplainer: {
@@ -301,7 +383,7 @@ const styles = {
   },
   explainerMuted: {
     fontSize: '12px',
-    color: '#828786',
+    color: '#8CA2C2',
     maxWidth: '420px',
     lineHeight: '1.4',
   },
@@ -317,7 +399,7 @@ const styles = {
     gap: '16px',
   },
   emergencyCallBanner: {
-    backgroundColor: '#132322',
+    backgroundColor: '#0B132B',
     border: '1.5px solid #FFCD48',
     borderRadius: '20px',
     padding: '16px 20px',
@@ -354,13 +436,18 @@ const styles = {
     gap: '10px',
     justifyContent: 'flex-end',
     flexWrap: 'wrap' as const,
+    width: '100%',
   },
   overridePill: {
-    padding: '10px 22px',
+    padding: '12px 22px',
     borderRadius: '56px',
+    flex: '1 1 220px',
+    textAlign: 'center' as const,
   },
   dismissPill: {
-    padding: '10px 20px',
+    padding: '12px 20px',
     borderRadius: '56px',
+    flex: '1 1 120px',
+    textAlign: 'center' as const,
   },
 };

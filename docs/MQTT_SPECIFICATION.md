@@ -16,49 +16,52 @@ Telemetry payloads are authenticated and encrypted at the **firmware level** usi
 
 ## 2. Free Cloud & Public MQTT Broker Services
 
-Since HiveMQ Cloud retired its standalone free serverless tier for new accounts, the pipeline natively supports **3 Free Public & Cloud Broker Options** with zero code changes:
+The pipeline defaults to **Mosquitto Public Test Broker** on secure MQTTS TLS port **8883** and supports multiple cloud options:
 
-### 2.1 Supported Free Broker Options
+### 2.1 Supported Broker Options
 
 | Broker Provider | Host URL | Port | Features & Setup |
 | :--- | :--- | :--- | :--- |
-| **HiveMQ Public Free Broker (Default)** | `broker.hivemq.com` | `1883` / `8000` (WS) | **Zero Credentials Required**. Instant live testing for dev & simulator. |
+| **Mosquitto Public Test Broker (Default Secure)** | `test.mosquitto.org` | `8883` (MQTTS TLS) | **Encrypted TLS Transport**. Zero Credentials Required. Instant live testing. |
+| **HiveMQ Public Free Broker** | `broker.hivemq.com` | `1883` / `8000` (WS) | Zero Credentials Required. Dev testing. |
 | **EMQX Cloud Serverless (Free Tier)** | `emqx.cloud` | `8883` (MQTTS) | Perpetual free tier (up to 1MB/s data & 1M messages). Requires free account at `emqx.com/en/cloud`. |
-| **Mosquitto Public Test Broker** | `test.mosquitto.org` | `1883` / `8883` (TLS) | Open public test broker by Eclipse Foundation. |
 
 ### 2.2 Backend `.env` Configuration (`server/.env`)
 ```env
 PORT=4000
-HIVEMQ_HOST=broker.hivemq.com
-HIVEMQ_PORT=1883
-HIVEMQ_USERNAME=
-HIVEMQ_PASSWORD=
+MOSQUITTO_HOST=test.mosquitto.org
+MOSQUITTO_PORT=8883
+MOSQUITTO_USERNAME=
+MOSQUITTO_PASSWORD=
 ```
 
-### 2.3 ESP32 / ESP8266 C++ Firmware Snippet for HiveMQ Public Broker
+### 2.3 ESP32 / ESP8266 C++ Firmware Snippet for Mosquitto Secure Broker (Port 8883 TLS)
 ```cpp
-#include <WiFi.h>          // Or <ESP8266WiFi.h> for Cane & Band
+#include <WiFi.h>              // Or <ESP8266WiFi.h> for Cane & Band
+#include <WiFiClientSecure.h>  // For MQTTS TLS Encryption
 #include <PubSubClient.h>
 
 const char* ssid = "YOUR_WIFI_SSID";
 const char* password = "YOUR_WIFI_PASSWORD";
 
-// HiveMQ Public Broker (Free, Instant Access)
-const char* mqtt_broker = "broker.hivemq.com";
-const int mqtt_port = 1883;
+// Mosquitto Secure Test Broker (TLS Encrypted MQTTS Port)
+const char* mqtt_broker = "test.mosquitto.org";
+const int mqtt_port = 8883;
 
-WiFiClient espClient;
+WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
 void setupMQTT() {
+  // Allow insecure/unverified CA certificates for public test broker while enforcing TLS transport encryption
+  espClient.setInsecure();
   client.setServer(mqtt_broker, mqtt_port);
 }
 
 void reconnectMQTT() {
   while (!client.connected()) {
-    Serial.print("Connecting to HiveMQ Public Broker...");
+    Serial.print("Connecting to Mosquitto Secure TLS Broker...");
     if (client.connect("cane_01_node")) {
-      Serial.println("Connected to HiveMQ Public!");
+      Serial.println("Connected to Mosquitto Secure Broker (Port 8883)!");
     } else {
       delay(3000);
     }

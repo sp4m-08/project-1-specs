@@ -15,11 +15,11 @@ export const WearablesGrid: React.FC<WearablesGridProps> = ({
   cane,
   band,
 }) => {
-  const specsDist = specs?.distance_m || 0.85;
-  const caneDist = cane?.distance_m || 0.85;
+  const specsDist = specs?.distance_m ?? 0.85;
+  const caneDist = cane?.distance_m ?? 0.85;
 
   const latestDetection = specsVision?.detections?.[0];
-  const visionLabel = latestDetection?.label || 'Continuous Scanning';
+  const visionLabel = latestDetection?.label || 'Continuous Perception';
   const visionCategory = latestDetection?.category || 'perception';
 
   const bandHr = band?.heart_rate || cane?.heart_rate || 72;
@@ -34,25 +34,25 @@ export const WearablesGrid: React.FC<WearablesGridProps> = ({
       <div className="deep-abyss-card" style={styles.card}>
         <div style={styles.cardTop}>
           <div style={styles.iconBox}>
-            <Eye size={18} color="#3DDC91" />
+            <Eye size={18} color="#38BDF8" />
           </div>
           <div style={styles.headerText}>
-            <span className="eyebrow-label">WEARABLE NODE 01</span>
+            <span className="eyebrow-label">NODE 01 • ESP32-CAM</span>
             <h3 style={styles.deviceHeading}>Smart Glasses</h3>
           </div>
           <div style={styles.liveBadge}>
-            <div style={styles.liveDot} className="live-pulse-green" />
-            <span style={styles.liveText}>50 Hz</span>
+            <div style={styles.liveDot} className="live-pulse-blue" />
+            <span style={styles.liveText}>{specs ? 'Active' : 'Offline'}</span>
           </div>
         </div>
 
         <div style={styles.metricsBox}>
           <div style={styles.metricItem}>
-            <span className="eyebrow-label" style={{ color: '#828786' }}>YOLO VISION INFERENCE</span>
+            <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>YOLO VISION INFERENCE</span>
             <div style={styles.valueRow}>
               <span style={{
                 ...styles.primaryValue,
-                color: visionCategory === 'currency' ? '#FFCD48' : '#3DDC91',
+                color: visionCategory === 'currency' ? '#FFCD48' : '#38BDF8',
               }}>
                 {visionLabel}
               </span>
@@ -60,11 +60,11 @@ export const WearablesGrid: React.FC<WearablesGridProps> = ({
           </div>
 
           <div style={styles.metricItem}>
-            <span className="eyebrow-label" style={{ color: '#828786' }}>ULTRASONIC RANGING</span>
+            <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>OBSTACLE DETECTED DISTANCE</span>
             <div style={styles.valueRow}>
               <span style={{
                 ...styles.primaryValue,
-                color: specsDist < 1.0 ? '#FFCD48' : '#FFFFFF',
+                color: specsDist < 0.8 ? '#FF4D4D' : specsDist < 1.2 ? '#FFCD48' : '#FFFFFF',
               }}>
                 {specsDist.toFixed(2)} m
               </span>
@@ -73,9 +73,9 @@ export const WearablesGrid: React.FC<WearablesGridProps> = ({
           </div>
 
           <div style={styles.metricItem}>
-            <span className="eyebrow-label" style={{ color: '#828786' }}>SPATIAL ORIENTATION</span>
+            <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>HEAD POSE VECTOR</span>
             <span style={styles.subtleMono}>
-              Yaw: {specs?.yaw_deg || -12.5}° • Pitch: {specs?.pitch_deg || 4.2}°
+              Yaw: {specs?.yaw_deg !== undefined ? specs.yaw_deg.toFixed(1) : '-12.5'}° • Pitch: {specs?.pitch_deg !== undefined ? specs.pitch_deg.toFixed(1) : '4.2'}°
             </span>
           </div>
         </div>
@@ -85,53 +85,53 @@ export const WearablesGrid: React.FC<WearablesGridProps> = ({
       <div className="deep-abyss-card" style={styles.card}>
         <div style={styles.cardTop}>
           <div style={styles.iconBox}>
-            <Navigation size={18} color="#3DDC91" />
+            <Navigation size={18} color="#38BDF8" />
           </div>
           <div style={styles.headerText}>
             <span className="eyebrow-label">WEARABLE NODE 02</span>
             <h3 style={styles.deviceHeading}>Smart Cane</h3>
           </div>
           <div style={styles.liveBadge}>
-            <div style={styles.liveDot} className="live-pulse-green" />
+            <div style={styles.liveDot} className="live-pulse-blue" />
             <span style={styles.liveText}>Active</span>
           </div>
         </div>
 
         <div style={styles.metricsBox}>
           <div style={styles.metricItem}>
-            <span className="eyebrow-label" style={{ color: '#828786' }}>GROUND PROXIMITY</span>
+            <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>ULTRASONIC GROUND RANGE</span>
             <div style={styles.valueRow}>
               <span style={{
                 ...styles.primaryValue,
-                color: cane?.buzzer_active ? '#FFCD48' : '#FFFFFF',
+                color: caneDist < 0.8 ? '#FFCD48' : '#FFFFFF',
               }}>
                 {caneDist.toFixed(2)} m
               </span>
               <span style={styles.unitSubtext}>
-                {cane?.buzzer_active ? 'Buzzer Active' : 'Normal'}
+                {cane?.buzzer_active ? 'Buzzer Triggered' : 'Scanning'}
               </span>
             </div>
           </div>
 
           <div style={styles.metricItem}>
-            <span className="eyebrow-label" style={{ color: '#828786' }}>IMU ACCELERATION</span>
+            <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>CANE IMU & IMPACT</span>
             <div style={styles.valueRow}>
-              <span style={{
-                ...styles.primaryValue,
-                color: cane?.fall_flag === 1 ? '#FFCD48' : '#FFFFFF',
-              }}>
-                {cane?.amag || 9.81} m/s²
+              <span style={styles.primaryValue}>
+                {cane?.amag?.toFixed(2) || '9.81'} m/s²
               </span>
-              {cane?.fall_flag === 1 && (
-                <span style={{ ...styles.unitSubtext, color: '#FFCD48' }}>Flag F_cane=1</span>
-              )}
+              <span style={{
+                ...styles.unitSubtext,
+                color: cane?.fall_flag ? '#FFCD48' : '#8CA2C2',
+              }}>
+                Flag: {cane?.fall_flag ? 'Candidate Fall (1)' : 'Nominal (0)'}
+              </span>
             </div>
           </div>
 
           <div style={styles.metricItem}>
-            <span className="eyebrow-label" style={{ color: '#828786' }}>HANDLE BIOMETRICS</span>
+            <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>HANDLE TELEMETRY</span>
             <span style={styles.subtleMono}>
-              HR: {cane?.heart_rate || 74} BPM • SpO2: {cane?.spo2 || 98}%
+              HR: {cane?.heart_rate || 72} BPM • SpO2: {cane?.spo2 || 98}%
             </span>
           </div>
         </div>
@@ -141,33 +141,36 @@ export const WearablesGrid: React.FC<WearablesGridProps> = ({
       <div className="deep-abyss-card" style={styles.card}>
         <div style={styles.cardTop}>
           <div style={styles.iconBox}>
-            <Activity size={18} color="#3DDC91" />
+            <Activity size={18} color="#38BDF8" />
           </div>
           <div style={styles.headerText}>
             <span className="eyebrow-label">WEARABLE NODE 03</span>
             <h3 style={styles.deviceHeading}>Smart Band</h3>
           </div>
-          <div style={styles.liveBadge}>
+          <div style={{
+            ...styles.liveBadge,
+            borderColor: isVitalsCritical || isVitalsWarning ? '#FFCD48' : 'rgba(56, 189, 248, 0.3)',
+          }}>
             <div style={{
               ...styles.liveDot,
-              backgroundColor: isVitalsCritical ? '#FFCD48' : '#3DDC91',
-            }} className="live-pulse-green" />
+              backgroundColor: isVitalsCritical || isVitalsWarning ? '#FFCD48' : '#38BDF8',
+            }} className="live-pulse-blue" />
             <span style={{
               ...styles.liveText,
-              color: isVitalsCritical ? '#FFCD48' : '#3DDC91',
+              color: isVitalsCritical || isVitalsWarning ? '#FFCD48' : '#38BDF8',
             }}>
-              {isVitalsCritical ? 'Critical' : isVitalsWarning ? 'Warning' : 'Nominal'}
+              {isVitalsCritical ? 'Critical' : isVitalsWarning ? 'Warning' : 'Normal'}
             </span>
           </div>
         </div>
 
         <div style={styles.metricsBox}>
           <div style={styles.metricItem}>
-            <span className="eyebrow-label" style={{ color: '#828786' }}>MAX30100 BIOMETRICS</span>
+            <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>PATIENT VITALS</span>
             <div style={styles.valueRow}>
               <span style={{
                 ...styles.primaryValue,
-                color: isVitalsCritical || isVitalsWarning ? '#FFCD48' : '#3DDC91',
+                color: isVitalsCritical || isVitalsWarning ? '#FFCD48' : '#38BDF8',
               }}>
                 {bandHr} BPM
               </span>
@@ -176,19 +179,21 @@ export const WearablesGrid: React.FC<WearablesGridProps> = ({
           </div>
 
           <div style={styles.metricItem}>
-            <span className="eyebrow-label" style={{ color: '#828786' }}>BAROMETRIC ALTITUDE</span>
+            <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>BAROMETRIC SENSOR</span>
             <div style={styles.valueRow}>
               <span style={styles.primaryValue}>
-                {band?.altitude_m || 120.5} m
+                {band?.altitude_m?.toFixed(1) || '120.5'} m
               </span>
-              <span style={styles.unitSubtext}>{band?.pressure_hpa || 1013} hPa</span>
+              <span style={styles.unitSubtext}>
+                {band?.pressure_hpa?.toFixed(0) || '1013'} hPa
+              </span>
             </div>
           </div>
 
           <div style={styles.metricItem}>
-            <span className="eyebrow-label" style={{ color: '#828786' }}>PEDOMETER & DYNAMICS</span>
+            <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>PEDOMETER & STEPS</span>
             <span style={styles.subtleMono}>
-              {band?.step_count || 1420} Steps • Accel: {band?.amag || 9.79} m/s²
+              {band?.step_count || 1420} Steps • Accel: {band?.amag?.toFixed(2) || '9.81'} m/s²
             </span>
           </div>
         </div>
@@ -205,13 +210,14 @@ const styles = {
     padding: '0 20px 24px 20px',
   },
   card: {
+    backgroundColor: '#0F1D38',
+    borderRadius: '20px',
     padding: '24px',
+    border: '1px solid rgba(56, 189, 248, 0.15)',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '16px',
-    borderRadius: '20px',
-    backgroundColor: '#0E1A19',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 4px 16px rgba(2, 132, 199, 0.08)',
   },
   cardTop: {
     display: 'flex',
@@ -220,20 +226,17 @@ const styles = {
     gap: '12px',
   },
   iconBox: {
-    width: '38px',
-    height: '38px',
-    borderRadius: '10px',
-    backgroundColor: '#132322',
-    border: '1px solid rgba(61, 220, 145, 0.25)',
+    width: '40px',
+    height: '40px',
+    borderRadius: '12px',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.3)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerText: {
     flex: 1,
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '2px',
   },
   deviceHeading: {
     fontSize: '16px',
@@ -243,60 +246,59 @@ const styles = {
     letterSpacing: '-0.08px',
   },
   liveBadge: {
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    backgroundColor: '#132322',
-    padding: '4px 10px',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.3)',
     borderRadius: '56px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    padding: '4px 12px',
   },
   liveDot: {
     width: '6px',
     height: '6px',
     borderRadius: '50%',
-    backgroundColor: '#3DDC91',
+    backgroundColor: '#38BDF8',
   },
   liveText: {
     fontSize: '11px',
-    fontWeight: '500',
-    color: '#3DDC91',
+    fontWeight: '600',
+    color: '#38BDF8',
     letterSpacing: '-0.08px',
   },
   metricsBox: {
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '12px',
-    backgroundColor: '#132322',
+    backgroundColor: '#0B132B',
     padding: '16px',
-    borderRadius: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.04)',
+    borderRadius: '16px',
+    border: '1px solid rgba(56, 189, 248, 0.1)',
   },
   metricItem: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '4px',
+    gap: '2px',
   },
   valueRow: {
     display: 'flex',
     flexDirection: 'row' as const,
     alignItems: 'baseline',
-    gap: '6px',
+    gap: '8px',
   },
   primaryValue: {
     fontSize: '18px',
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: '-0.08px',
   },
   unitSubtext: {
     fontSize: '12px',
-    color: '#828786',
-    fontWeight: '400',
+    color: '#8CA2C2',
   },
   subtleMono: {
-    fontSize: '12px',
-    color: '#828786',
+    fontSize: '11px',
+    color: '#8CA2C2',
     fontFamily: 'JetBrains Mono, monospace',
   },
 };

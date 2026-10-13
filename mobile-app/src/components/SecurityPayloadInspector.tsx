@@ -19,7 +19,7 @@ export const SecurityPayloadInspector: React.FC<SecurityPayloadInspectorProps> =
           </div>
 
           <div style={styles.authBadge}>
-            <Key size={13} color="#3DDC91" style={{ marginRight: 6 }} />
+            <Key size={13} color="#38BDF8" style={{ marginRight: 6 }} />
             <span style={styles.authBadgeText}>Firmware Authenticated</span>
           </div>
         </div>
@@ -27,23 +27,23 @@ export const SecurityPayloadInspector: React.FC<SecurityPayloadInspectorProps> =
         {latestLog && (
           <div style={styles.statsRow}>
             <div style={styles.statTile}>
-              <span className="eyebrow-label" style={{ color: '#828786' }}>ORIGIN NODE</span>
+              <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>ORIGIN NODE</span>
               <span style={styles.statValue}>{latestLog.dev_id}</span>
             </div>
 
             <div style={styles.statTile}>
-              <span className="eyebrow-label" style={{ color: '#828786' }}>MONOTONIC COUNTER</span>
-              <span style={{ ...styles.statValue, color: '#3DDC91' }}>#{latestLog.cnt}</span>
+              <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>MONOTONIC COUNTER</span>
+              <span style={{ ...styles.statValue, color: '#38BDF8' }}>#{latestLog.cnt}</span>
             </div>
 
             <div style={styles.statTile}>
-              <span className="eyebrow-label" style={{ color: '#828786' }}>GCM TAG AUTH</span>
+              <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>GCM TAG AUTH</span>
               <span style={styles.statValue}>128-BIT VERIFIED</span>
             </div>
 
             <div style={styles.statTile}>
-              <span className="eyebrow-label" style={{ color: '#828786' }}>DECRYPT TIME</span>
-              <span style={{ ...styles.statValue, color: '#3DDC91' }}>{latestLog.latencyMs || 1.8} ms</span>
+              <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>DECRYPT TIME</span>
+              <span style={{ ...styles.statValue, color: '#38BDF8' }}>{latestLog.latencyMs || 1.8} ms</span>
             </div>
           </div>
         )}
@@ -51,7 +51,7 @@ export const SecurityPayloadInspector: React.FC<SecurityPayloadInspectorProps> =
         {/* Terminal Log Stream */}
         <div style={styles.terminalWindow}>
           <div style={styles.terminalHeader}>
-            <Terminal size={14} color="#828786" style={{ marginRight: 6 }} />
+            <Terminal size={14} color="#8CA2C2" style={{ marginRight: 6 }} />
             <span style={styles.terminalTitle}>Live Broker Telemetry Ingestion Log</span>
           </div>
 
@@ -63,7 +63,7 @@ export const SecurityPayloadInspector: React.FC<SecurityPayloadInspectorProps> =
                 </span>
                 <span style={{
                   ...styles.logTag,
-                  color: log.success ? '#3DDC91' : '#FFCD48',
+                  color: log.success ? '#38BDF8' : '#FFCD48',
                 }}>
                   [{log.success ? 'AES-GCM OK' : 'REJECTED'}]
                 </span>
@@ -82,16 +82,17 @@ export const SecurityPayloadInspector: React.FC<SecurityPayloadInspectorProps> =
 
 const styles = {
   outerWrapper: {
-    padding: '0 20px 24px 20px',
+    padding: '0 clamp(14px, 4vw, 20px) 24px clamp(14px, 4vw, 20px)',
   },
   card: {
-    backgroundColor: '#0E1A19',
+    backgroundColor: '#0F1D38',
     borderRadius: '20px',
-    padding: '24px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    padding: 'clamp(16px, 4vw, 24px)',
+    border: '1px solid rgba(56, 189, 248, 0.15)',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '16px',
+    boxShadow: '0 4px 16px rgba(2, 132, 199, 0.08)',
   },
   header: {
     display: 'flex',
@@ -111,30 +112,30 @@ const styles = {
   authBadge: {
     display: 'inline-flex',
     alignItems: 'center',
-    backgroundColor: '#132322',
-    border: '1px solid rgba(61, 220, 145, 0.3)',
+    backgroundColor: '#0B132B',
+    border: '1px solid rgba(56, 189, 248, 0.3)',
     borderRadius: '56px',
     padding: '6px 14px',
   },
   authBadgeText: {
     fontSize: '12px',
-    color: '#3DDC91',
-    fontWeight: '500',
+    color: '#38BDF8',
+    fontWeight: '600',
     letterSpacing: '-0.08px',
   },
   statsRow: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-    gap: '12px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))',
+    gap: '10px',
   },
   statTile: {
-    backgroundColor: '#132322',
+    backgroundColor: '#0B132B',
     padding: '12px 14px',
     borderRadius: '14px',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '4px',
-    border: '1px solid rgba(255, 255, 255, 0.06)',
+    border: '1px solid rgba(56, 189, 248, 0.12)',
   },
   statValue: {
     fontSize: '14px',
@@ -143,31 +144,31 @@ const styles = {
     fontFamily: 'JetBrains Mono, monospace',
   },
   terminalWindow: {
-    backgroundColor: '#070F0F',
-    borderRadius: '16px',
-    padding: '16px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    backgroundColor: '#070D1E',
+    borderRadius: '14px',
+    border: '1px solid rgba(56, 189, 248, 0.15)',
+    padding: '14px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '10px',
   },
   terminalHeader: {
     display: 'flex',
-    flexDirection: 'row' as const,
     alignItems: 'center',
-    marginBottom: '10px',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+    borderBottom: '1px solid rgba(56, 189, 248, 0.1)',
     paddingBottom: '8px',
   },
   terminalTitle: {
     fontSize: '11px',
-    color: '#828786',
-    fontWeight: '500',
-    letterSpacing: '0.45px',
-    textTransform: 'uppercase' as const,
+    color: '#8CA2C2',
+    fontFamily: 'JetBrains Mono, monospace',
+    letterSpacing: '0.3px',
   },
   logStream: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '8px',
-    maxHeight: '160px',
+    gap: '6px',
+    maxHeight: '140px',
     overflowY: 'auto' as const,
   },
   logItem: {
@@ -176,18 +177,18 @@ const styles = {
     gap: '8px',
     fontSize: '11px',
     fontFamily: 'JetBrains Mono, monospace',
-    lineHeight: '1.4',
+    flexWrap: 'wrap' as const,
   },
   logTime: {
-    color: '#828786',
+    color: '#64748B',
   },
   logTag: {
     fontWeight: '600',
   },
   logDev: {
-    color: '#97DDBC',
+    color: '#8CA2C2',
   },
   logText: {
-    color: '#D0D3D3',
+    color: '#FFFFFF',
   },
 };
