@@ -166,13 +166,13 @@ function processIncomingEncryptedTopic(topic: string, envelope: EncryptedEnvelop
     if (hr < 50 || hr > 120 || spo2 < 90) {
       broadcastWss('HEALTH_ALERT', {
         level: 'CRITICAL',
-        message: `CRITICAL VITALS ANOMALY: HR ${hr} BPM, SpO2 ${spo2}%. Immediate caregiver attention required!`,
+         message: `Health reading needs attention: heart rate ${hr} BPM and blood oxygen ${spo2}%. Review this snapshot with a caregiver or qualified professional.`,
         timestamp: Date.now(),
       });
     } else if (hr < 60 || hr > 100 || (spo2 >= 90 && spo2 <= 94)) {
       broadcastWss('HEALTH_ALERT', {
         level: 'WARNING',
-        message: `VITALS WARNING: HR ${hr} BPM, SpO2 ${spo2}%. Pushed notification to caregiver.`,
+         message: `Health reading is outside the usual demo range: heart rate ${hr} BPM and blood oxygen ${spo2}%. Review the latest snapshot with a caregiver.`,
         timestamp: Date.now(),
       });
     }
@@ -189,7 +189,7 @@ function processIncomingEncryptedTopic(topic: string, envelope: EncryptedEnvelop
 
       broadcastWss('HEALTH_ALERT', {
         level: 'CRITICAL',
-        message: 'EMERGENCY: Fall event or SOS button asserted on Smart Band!',
+         message: 'SOS signal received from the Smart Band. Follow the configured care plan; no external call or message was placed by this demo.',
         timestamp: Date.now(),
       });
     }
@@ -223,7 +223,7 @@ if (process.env.ENABLE_SIMULATOR === 'true') {
 // Express REST Endpoints
 app.get('/', (req, res) => {
   res.json({
-    name: 'AIoT Assistive Suite Backend Bridge Server',
+      name: 'AURA Bridge',
     status: 'ONLINE',
     mqttBroker: mosquitto.getIsConnected() ? 'MQTT_BROKER_ACTIVE' : 'WAITING_FOR_MQTT_BROKER',
     statusEndpoint: '/api/status',
@@ -343,8 +343,8 @@ server.listen(PORT, () => {
   const brokerHost = process.env.MOSQUITTO_HOST || process.env.HIVEMQ_HOST || 'test.mosquitto.org';
   const brokerPort = process.env.MOSQUITTO_PORT || process.env.HIVEMQ_PORT || 8883;
   console.log(`========================================================`);
-  console.log(` AIoT Assistive Pipeline Server Running on Port ${PORT}`);
-  console.log(` Encrypted MQTT Topics & Algorithm 2 Fall Fusion ACTIVE`);
+  console.log(` AURA Bridge Running on Port ${PORT}`);
+  console.log(` Wearable telemetry, fall fusion, and assistive safety pipeline ACTIVE`);
   console.log(` WebSocket Telemetry Streamer Ready at ws://localhost:${PORT}`);
   console.log(` Target MQTT Broker Host: ${brokerHost}:${brokerPort} (MQTTS TLS)`);
   console.log(`========================================================`);

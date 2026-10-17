@@ -1,6 +1,6 @@
 /**
- * Cross-Device Fall Verification Engine (Algorithm 2 from Paper)
- * Fuses independent candidate fall flags from Smart Cane (F_cane) and Smart Band (F_band)
+ * Cross-device fall verification engine.
+ * Fuses independent candidate fall signals from Smart Cane and Smart Band.
  */
 
 export interface FallCandidateEvent {
@@ -74,7 +74,7 @@ export class CrossDeviceFallVerifier {
           caneEvent: this.lastCaneEvent!,
           bandEvent: this.lastBandEvent!,
           timeDiffMs,
-          message: `CRITICAL: High-Confidence Fall Verified! Concurrent impact detected on Cane & Band (dt = ${timeDiffMs}ms). Emergency response dispatched!`,
+           message: `CRITICAL: High-confidence fall signal confirmed. Concurrent impact detected on Smart Cane and Smart Band (within ${timeDiffMs}ms). Review the alert and follow the configured care plan.`,
           timestamp: Date.now(),
         };
         this.notifyListeners(highConfidenceAlert);
@@ -115,7 +115,7 @@ export class CrossDeviceFallVerifier {
       caneEvent: event.sourceDevice === 'cane' ? event : undefined,
       bandEvent: event.sourceDevice === 'band' ? event : undefined,
       sosWindowRemainingSec: remainingSec,
-      message: `WARNING: Single-device fall detected by ${event.sourceDevice.toUpperCase()}. Press SOS button on band within 30s to cancel.`,
+      message: `WARNING: A possible fall was detected by the Smart ${event.sourceDevice === 'cane' ? 'Cane' : 'Band'}. Use the cancel action if this is a false alarm within 30 seconds.`,
       timestamp: Date.now(),
     };
 
@@ -140,7 +140,7 @@ export class CrossDeviceFallVerifier {
           ...initialWarning,
           status: 'ESCALATED_TO_CAREGIVER',
           sosWindowRemainingSec: 0,
-          message: `ESCALATED: Single-device fall warning unconfirmed after 30s. Escalating alert to Caregiver & Emergency Contacts!`,
+            message: `ESCALATED: The possible fall was not silenced within 30 seconds. The Android client will attempt the configured native emergency SMS and phone call.`,
         };
         this.notifyListeners(escalatedAlert);
       }

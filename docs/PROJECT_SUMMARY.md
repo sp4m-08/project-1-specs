@@ -19,15 +19,15 @@ This repository implements the end-to-end architecture described in the research
 4. **3-D Spatial Obstacle Mapping Engine**:
    - Implements orientation transform: $\mathbf{p} = d \cdot [\cos\phi\cos\theta, \cos\phi\sin\theta, \sin\phi]^T$.
    - Reconstructs a 59-cell point cloud color-coded by distance (near-field $<0.8\text{m}$ red to far-field $2.0\text{m}$ blue).
-5. **Voice-Enabled Aura AI Assistant**:
+5. **Voice-Enabled AURA Guide Assistant**:
    - Natural-language query interface with multi-modal responses correlating vitals history (HR, $\text{SpO}_2$) with obstacle and fall events.
-6. **Production-Ready React Native Web Dashboard**:
-   - Cyber-medical dark mode aesthetic (`#0B0F17`, glowing cyan `#00F2FE`, alert red `#EF4444`, emerald `#10B981`).
+6. **AURA Assist React/Vite Dashboard packaged with Capacitor**:
+   - Accessible dark safety interface with wearer and caregiver role selection.
+   - Role-aware home, path awareness, alert history, and settings surfaces.
    - Live telemetry status cards for Smart Glasses, Smart Cane, and Smart Band.
-   - Real-time animated Vitals Telemetry sparkline chart (HR & $\text{SpO}_2$).
-   - Interactive 3D Spatial Radar Visualizer rendering the 59-cell obstacle map.
-   - Live AES-256-GCM Encryption Header & Replay Inspector.
-   - Embedded Hardware Simulator Control Bar for live manual trigger testing.
+   - Current health snapshot with explicit no-data and freshness states.
+   - Accessible spatial radar summary and advanced security diagnostics.
+   - Developer-only hardware simulator controls for local testing.
 
 ---
 
@@ -56,16 +56,17 @@ This repository implements the end-to-end architecture described in the research
   - AI Assistant: [`auraAiAssistant.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/src/chatbot/auraAiAssistant.ts)
   - Hardware Simulator: [`hardwareSimulator.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/src/simulator/hardwareSimulator.ts)
   - Server Entrypoint: [`index.ts`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/server/src/index.ts)
-- **React Native Web Dashboard App**:
-  - Main App Container: [`App.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/App.tsx)
-  - Header Bar: [`HeaderBar.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/HeaderBar.tsx)
-  - Wearables Status Grid: [`WearablesGrid.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/WearablesGrid.tsx)
-  - Vitals Telemetry Chart: [`VitalsTelemetryChart.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/VitalsTelemetryChart.tsx)
-  - 3D Spatial Radar: [`Spatial3dRadar.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/Spatial3dRadar.tsx)
-  - Fall Fusion Monitor: [`FallFusionMonitor.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/FallFusionMonitor.tsx)
-  - Security Payload Inspector: [`SecurityPayloadInspector.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/SecurityPayloadInspector.tsx)
-  - Aura AI Chatbot Modal: [`AuraAiChatbotModal.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/AuraAiChatbotModal.tsx)
-  - Simulator Control Bar: [`SimulatorControlBar.tsx`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/mobile-app/src/components/SimulatorControlBar.tsx)
+- **AURA Assist Dashboard App**:
+  - Main App Container: [`App.tsx`](../mobile-app/src/App.tsx)
+  - Role Selection: [`RoleSelectionScreen.tsx`](../mobile-app/src/components/RoleSelectionScreen.tsx)
+  - Main Dashboard: [`DashboardScreen.tsx`](../mobile-app/src/components/DashboardScreen.tsx)
+  - Wearable Status Grid: [`DeviceStatusGrid.tsx`](../mobile-app/src/components/DeviceStatusGrid.tsx)
+  - Health Snapshot: [`VitalsCard.tsx`](../mobile-app/src/components/VitalsCard.tsx)
+  - Alert History: [`AlertsScreen.tsx`](../mobile-app/src/components/AlertsScreen.tsx)
+  - Path Awareness: [`Spatial3dRadar.tsx`](../mobile-app/src/components/Spatial3dRadar.tsx)
+  - Security Diagnostics: [`SecurityPayloadInspector.tsx`](../mobile-app/src/components/SecurityPayloadInspector.tsx)
+  - AURA Guide Drawer: [`AIChatDrawer.tsx`](../mobile-app/src/components/AIChatDrawer.tsx)
+  - Developer Simulation Tools: [`SimulatorControlBar.tsx`](../mobile-app/src/components/SimulatorControlBar.tsx)
 
 ---
 

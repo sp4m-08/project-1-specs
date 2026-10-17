@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Zap, ShieldCheck, Activity, Bell, Settings, Radio, RefreshCw } from 'lucide-react';
+import { Zap, Bell, RefreshCw, ShieldCheck, HeartHandshake } from 'lucide-react';
 import { DeviceStatusGrid } from './DeviceStatusGrid';
 import { VitalsCard } from './VitalsCard';
 import { FallAlertModal } from './FallAlertModal';
-import { SimulatorControlBar } from './SimulatorControlBar';
 import { mobileUx } from '../utils/haptics';
 import {
   SpecsTelemetry,
@@ -12,9 +11,12 @@ import {
   BandTelemetry,
   FallAlertState,
   DeviceLastSeen,
+  UserRole,
 } from '../types/telemetry';
 
 interface DashboardScreenProps {
+  role: UserRole;
+  wearerName?: string;
   isConnected: boolean;
   serverHost: string;
   onConfigureServer: () => void;
@@ -28,17 +30,20 @@ interface DashboardScreenProps {
   onCancelAlert: () => void;
   onTriggerAction: (action: string, value?: any) => void;
   onOpenChat: () => void;
+  onOpenAlerts?: () => void;
 }
 
 /**
  * DashboardScreen — Main Telemetry Dashboard & Device Status Bar
- * - Header: App title "AURA AIoT ASSISTANT" with live connection badge ("Bridge: Connected" in Neon Pulse #3ddc91).
+ * - Header: AURA Assist role-aware safety overview with live bridge status.
  * - Connected Devices Row: 3 Tiles on #0e1a19 background with 60px radius.
  * - Live Vitals Panel: Light Content Card #edf7f5 with 60px radius.
  * - Algorithm 2 Fall Status Banner & Alert Modal triggers.
  * - Embedded hardware telemetry simulator test bar.
  */
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({
+  role,
+  wearerName = 'Demo wearer',
   isConnected,
   serverHost,
   onConfigureServer,
@@ -52,13 +57,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onCancelAlert,
   onTriggerAction,
   onOpenChat,
+  onOpenAlerts,
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [dismissedAlertId, setDismissedAlertId] = useState<string | null>(null);
-  const currentHr = band?.heart_rate || cane?.heart_rate || 72;
-  const currentSpO2 = band?.spo2 || cane?.spo2 || 98;
-  const altitude = band?.altitude_m ?? 120.5;
-  const pressure = band?.pressure_hpa ?? 1013.25;
+  const currentHr = band?.heart_rate ?? cane?.heart_rate;
+  const currentSpO2 = band?.spo2 ?? cane?.spo2;
+  const altitude = band?.altitude_m;
+  const pressure = band?.pressure_hpa;
 
   const isFallActive = Boolean(
     activeAlert &&
@@ -79,7 +85,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     } else {
       setDismissedAlertId('dismissed');
     }
+  };
+
+  const handleCancelAlert = () => {
     onCancelAlert();
+    setDismissedAlertId(activeAlert?.id ?? 'dismissed');
   };
 
   const handleRefreshClick = () => {
@@ -101,24 +111,26 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   };
 
   return (
-    <div style={styles.dashboardContainer} className="tab-transition-view">
+    <div style={styles.dashboardContainer} className="tab-transition-view collage-dashboard">
       {/* 1. Main Header Bar */}
-      <header style={styles.headerBar}>
-        <div style={styles.headerLeft}>
-          <div style={styles.logoBadge}>
+      <header style={styles.headerBar} className="collage-dashboard__header">
+        <div style={styles.headerLeft} className="collage-dashboard__header-left">
+          <div style={styles.logoBadge} className="collage-dashboard__logo">
             <Zap size={20} color="#38BDF8" />
           </div>
           <div>
-            <span className="eyebrow-label">COMMAND CONSOLE</span>
-            <h1 style={styles.appTitle}>AIoT Assistive Suite</h1>
+            <span className="eyebrow-label">AURA ASSIST</span>
+            <h1 style={styles.appTitle} className="collage-dashboard__title">{role === 'caregiver' ? 'Care overview' : 'Your safety'}</h1>
           </div>
         </div>
 
-        <div style={styles.headerRight}>
+        <div style={styles.headerRight} className="collage-dashboard__header-right">
           {/* Re-sync / Refresh Button */}
           <button
             onClick={handleRefreshClick}
+            type="button"
             style={styles.refreshBtn}
+            className="collage-dashboard__refresh"
             title="Re-sync Wearable Telemetry"
           >
             <RefreshCw
@@ -132,8 +144,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           </button>
 
           {/* Bridge Connection Status Badge */}
-          <div
+          <button
             onClick={onConfigureServer}
+            type="button"
+            className="collage-dashboard__bridge"
             style={{
               ...styles.bridgeStatusPill,
               cursor: 'pointer',
@@ -148,45 +162,60 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               className={isConnected ? 'live-pulse-blue' : ''}
             />
             <span style={styles.bridgeStatusText}>
-              Bridge: {isConnected ? 'Connected' : 'Disconnected'}
+              Monitoring {isConnected ? 'connected' : 'offline'}
             </span>
-          </div>
+          </button>
 
           {/* Quick SOS Trigger */}
           <button
             onClick={handleSosPress}
-            className="pill-btn-ghost"
+            type="button"
+            className="pill-btn-ghost collage-dashboard__sos"
             style={styles.sosPill}
           >
-            <span>SOS</span>
+              <span>{role === 'wearer' ? 'SOS' : 'Quick SOS'}</span>
           </button>
         </div>
       </header>
 
       {/* 2. Floating Telemetry Stats Bar */}
-      <section style={styles.statBar}>
-        <div style={styles.statCol}>
-          <span style={styles.statValue}>50 Hz</span>
-          <span style={styles.statLabel}>TELEMETRY STREAM RATE</span>
+      <section style={styles.statBar} className="collage-dashboard__stats" aria-label="Safety summary">
+        <div style={styles.statCol} className="collage-dashboard__stat">
+          <span style={styles.statValue} className="collage-dashboard__stat-value">{role === 'caregiver' ? wearerName : 'Protected'}</span>
+          <span style={styles.statLabel} className="collage-dashboard__stat-label">{role === 'caregiver' ? 'WEARER PROFILE' : 'SAFETY MONITORING'}</span>
         </div>
-        <div style={styles.statCol}>
-          <span style={styles.statValue}>256-BIT</span>
-          <span style={styles.statLabel}>AES-GCM HARDWARE ENCRYPT</span>
+        <div style={styles.statCol} className="collage-dashboard__stat">
+          <span style={styles.statValue} className="collage-dashboard__stat-value">{[specs, cane, band].filter(Boolean).length} / 3</span>
+          <span style={styles.statLabel} className="collage-dashboard__stat-label">WEARABLES REPORTING</span>
         </div>
-        <div style={styles.statCol}>
-          <span style={styles.statValue}>3.0s</span>
-          <span style={styles.statLabel}>ALGORITHM 2 FUSION WINDOW</span>
+        <div style={styles.statCol} className="collage-dashboard__stat">
+          <span style={styles.statValue} className="collage-dashboard__stat-value">{activeAlert && isFallActive ? 'Attention' : 'Clear'}</span>
+          <span style={styles.statLabel} className="collage-dashboard__stat-label">FALL PROTECTION</span>
         </div>
-        <div style={styles.statCol}>
-          <span style={styles.statValue}>&lt; 2.1ms</span>
-          <span style={styles.statLabel}>SECURE BROKER LATENCY</span>
+        <div style={styles.statCol} className="collage-dashboard__stat">
+          <span style={styles.statValue} className="collage-dashboard__stat-value">{isConnected ? 'Live' : 'Offline'}</span>
+          <span style={styles.statLabel} className="collage-dashboard__stat-label">LAST CONNECTION</span>
         </div>
+      </section>
+
+      <section className="welcome-strip" aria-label="Current profile">
+        <div className="welcome-strip__icon" aria-hidden="true"><HeartHandshake size={18} /></div>
+        <div>
+          <strong>{role === 'caregiver' ? `Monitoring ${wearerName}` : 'You are in wearer mode'}</strong>
+          <span>{role === 'caregiver' ? 'Review safety updates and device freshness at a glance.' : 'AURA will keep safety information simple and spoken when needed.'}</span>
+        </div>
+        <button className="button button--text" type="button" onClick={onOpenChat}>
+          Ask AURA
+        </button>
       </section>
 
       {/* 3. Fall Detection Notice Banner (When Active) */}
       {isFallActive && (
-        <section style={styles.alertBannerSection}>
-          <div style={styles.alertBanner}>
+        <section style={styles.alertBannerSection} className="collage-dashboard__alert-section">
+          <div className="collage-dashboard__alert" style={{
+            ...styles.alertBanner,
+            backgroundColor: activeAlert?.confidence === 'HIGH' ? '#F06B6B' : '#F3C969',
+          }}>
             <div
               style={{ ...styles.alertBannerLeft, cursor: 'pointer' }}
               onClick={() => setDismissedAlertId(null)}
@@ -196,8 +225,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               <div>
                 <span style={styles.alertBannerTitle}>
                   {activeAlert?.status === 'HIGH_CONFIDENCE_ALERT'
-                    ? 'DUAL-DEVICE FALL CONFIRMED'
-                    : 'SINGLE-DEVICE IMPACT WARNING (SOS RESPONSE ACTIVE)'}
+                    ? 'FALL LIKELY CONFIRMED'
+                    : 'POSSIBLE FALL DETECTED'}
                 </span>
                 <span style={styles.alertBannerSubtitle}>{activeAlert?.message}</span>
               </div>
@@ -211,7 +240,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       )}
 
       {/* 4. Connected Devices Row (3 Tiles on #0e1a19, 60px radius) */}
-      <DeviceStatusGrid
+        <DeviceStatusGrid
+          role={role}
         specs={specs}
         specsVision={specsVision}
         cane={cane}
@@ -225,16 +255,20 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         spo2={currentSpO2}
         altitudeM={altitude}
         pressureHpa={pressure}
+        role={role}
       />
 
-      {/* 6. Embedded Hardware Simulator Control Bar */}
-      <SimulatorControlBar onTriggerAction={onTriggerAction} />
+      <section className="dashboard-help">
+        <ShieldCheck size={18} aria-hidden="true" />
+        <span>{role === 'caregiver' ? 'Technical security and simulation tools are available in More.' : 'Need help? Use Ask AURA or the SOS button.'}</span>
+      </section>
 
       {/* 7. Two-Tier Fall Alert Modal */}
       <FallAlertModal
         alertState={activeAlert}
         isOpen={isModalOpen}
-        onCancelAlert={handleCloseModal}
+        onCancelAlert={handleCancelAlert}
+        onAcknowledgeAlert={handleCancelAlert}
         onCloseModal={handleCloseModal}
       />
     </div>

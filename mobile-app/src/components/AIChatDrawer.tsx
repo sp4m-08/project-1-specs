@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { Bot, Mic, Send, X, Heart, ShieldCheck, Eye, Sparkles, Link2 } from 'lucide-react';
-import { ChatMessage } from '../types/telemetry';
+import { ChatMessage, UserRole } from '../types/telemetry';
 
 interface AIChatDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   messages: ChatMessage[];
   onSendMessage: (prompt: string) => void;
+  role: UserRole;
+  wearerName?: string;
 }
 
 /**
  * AIChatDrawer — Voice-Enabled AI Chatbot & Sensor Fusion Drawer
- * Natural-language conversational interface answering clinical queries:
- * - "How was my father's heart rate over the last hour?"
+ * Natural-language conversational interface answering assistive safety questions:
+ * - "How was the wearer's heart rate over the last hour?"
  * - "Any safety alerts or falls detected?"
  * - "Summarize current obstacle detections from Smart Glasses"
  * Renders multi-modal response cards with 1h HR trends and cross-device event correlations.
@@ -22,6 +24,8 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
   onClose,
   messages,
   onSendMessage,
+  role,
+  wearerName = 'the wearer',
 }) => {
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -58,7 +62,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
         recognition.onerror = (event: any) => {
           console.warn('[SpeechRecognition Error]:', event.error);
           setIsListening(false);
-          fallbackToSampleQuery();
+           addToast('Voice input unavailable', 'You can type your question instead.');
         };
 
         recognition.onend = () => {
@@ -72,56 +76,49 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
       }
     }
 
-    fallbackToSampleQuery();
+    addToast('Voice input unavailable', 'You can type your question instead.');
   };
 
-  const fallbackToSampleQuery = () => {
-    setIsListening(true);
-    const cannedVoiceQueries = [
-      "How was my father's heart rate over the last hour?",
-      "Any safety alerts or falls detected?",
-      "Summarize current obstacle detections from Smart Glasses",
-    ];
-    const pick = cannedVoiceQueries[Math.floor(Math.random() * cannedVoiceQueries.length)];
-
-    setTimeout(() => {
-      setIsListening(false);
-      onSendMessage(pick);
-    }, 1000);
+  const addToast = (title: string, message: string) => {
+    // The drawer does not own the global toast queue; keep this visible in the field
+    // and avoid silently submitting a random prompt when microphone input is unavailable.
+    setInputText(`${title}: ${message}`);
   };
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.drawerCard}>
+    <div style={styles.overlay} className="dadaist-chat-overlay" role="dialog" aria-modal="true" aria-labelledby="aura-guide-title">
+      <div style={styles.drawerCard} className="dadaist-chat-drawer">
         {/* Top Header */}
-        <div style={styles.drawerHeader}>
+        <div style={styles.drawerHeader} className="dadaist-chat-header">
           <div style={styles.headerTitleGroup}>
-            <div style={styles.botIconCircle}>
+            <div style={styles.botIconCircle} className="dadaist-chat-bot-icon">
               <Bot size={20} color="#38BDF8" />
             </div>
             <div>
-              <span className="eyebrow-label">AURA COGNITIVE AGENT • POWERED BY GEMINI</span>
-              <h3 style={styles.drawerTitle}>Patient Intelligence Assistant</h3>
+              <span className="eyebrow-label">AURA GUIDE • VOICE ASSISTANCE</span>
+              <h3 id="aura-guide-title" style={styles.drawerTitle}>{role === 'caregiver' ? `Ask about ${wearerName}` : 'Ask AURA Guide'}</h3>
             </div>
           </div>
 
-          <button onClick={onClose} style={styles.closeBtn} title="Dismiss Drawer">
+          <button onClick={onClose} style={styles.closeBtn} className="dadaist-chat-close" title="Close AURA Guide" aria-label="Close AURA Guide" type="button">
             <X size={20} color="#8CA2C2" />
           </button>
         </div>
 
         {/* Quick Suggestion Pills */}
-        <div style={styles.pillsRow}>
+        <div style={styles.pillsRow} className="dadaist-chat-suggestions">
           <button
-            onClick={() => onSendMessage("How was my father's heart rate over the last hour?")}
+            onClick={() => onSendMessage(role === 'caregiver' ? `How was ${wearerName}'s heart rate over the last hour?` : 'How is my health right now?')}
+            type="button"
             style={styles.suggestionPill}
           >
             <Heart size={12} color="#38BDF8" style={{ marginRight: 6 }} />
-            <span>Father's HR over last hour</span>
+            <span>{role === 'caregiver' ? `${wearerName}'s health trend` : 'My health status'}</span>
           </button>
 
           <button
-            onClick={() => onSendMessage("Any safety alerts I should know about?")}
+            onClick={() => onSendMessage('Any safety alerts I should know about?')}
+            type="button"
             style={styles.suggestionPill}
           >
             <ShieldCheck size={12} color="#38BDF8" style={{ marginRight: 6 }} />
@@ -129,21 +126,24 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
           </button>
 
           <button
-            onClick={() => onSendMessage("Summarize current obstacle detections from Smart Glasses")}
+            onClick={() => onSendMessage('What is ahead of me right now?')}
+            type="button"
             style={styles.suggestionPill}
           >
             <Eye size={12} color="#38BDF8" style={{ marginRight: 6 }} />
-            <span>Obstacle detections summary</span>
+            <span>Path awareness summary</span>
           </button>
         </div>
 
         {/* Messages Scroll Area */}
-        <div style={styles.messageList}>
+        <div style={styles.messageList} className="dadaist-chat-messages">
           {messages.map((msg) => {
             const isUser = msg.sender === 'user';
             return (
               <div
                 key={msg.id}
+                className="dadaist-chat-bubble"
+                data-sender={isUser ? 'user' : 'guide'}
                 style={{
                   ...styles.bubbleContainer,
                   alignSelf: isUser ? 'flex-end' : 'flex-start',
@@ -152,24 +152,24 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                 }}
               >
                 <div style={styles.bubbleHeader}>
-                  <span style={{
+                   <span className="sender-tag" style={{
                     ...styles.senderTag,
                     color: isUser ? '#8CA2C2' : '#38BDF8',
                   }}>
                     {isUser
                       ? 'USER VOICE/TEXT PROMPT'
-                      : (msg.modelUsed ? `AURA AI • ${msg.modelUsed.toUpperCase()}` : 'AURA AI • GEMINI')}
+                       : (msg.modelUsed ? `AURA GUIDE • ${msg.modelUsed.toUpperCase()}` : 'AURA GUIDE')}
                   </span>
                   <span style={styles.timestamp}>
                     {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
 
-                <p style={styles.messageText}>{msg.text}</p>
+                <p style={styles.messageText} className="message-text">{msg.text}</p>
 
                 {/* Multi-Modal Telemetry Data Card (Figure 13 in Paper) */}
                 {msg.dataCard && (
-                  <div style={styles.dataCardContainer}>
+                  <div style={styles.dataCardContainer} className="dadaist-chat-data-card">
                     <div style={styles.dataCardTitleRow}>
                       <Sparkles size={14} color="#38BDF8" style={{ marginRight: 6 }} />
                       <span style={styles.dataCardTitle}>{msg.dataCard.title}</span>
@@ -198,7 +198,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                     )}
 
                     {msg.dataCard.correlatedEvent && (
-                      <div style={styles.eventCorrelationBox}>
+                      <div style={styles.eventCorrelationBox} className="dadaist-chat-event">
                         <Link2 size={12} color="#38BDF8" style={{ marginRight: 6, flexShrink: 0 }} />
                         <span style={styles.eventCorrelationText}>
                           {msg.dataCard.correlatedEvent}
@@ -213,16 +213,18 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
         </div>
 
         {/* Input Bar */}
-        <div style={styles.inputArea}>
+        <div style={styles.inputArea} className="dadaist-chat-input-area">
           <button
             onClick={handleVoiceTrigger}
-            style={{
+             className={`dadaist-chat-mic ${isListening ? 'live-pulse-blue' : ''}`}
+             style={{
               ...styles.micCircleBtn,
               backgroundColor: isListening ? '#38BDF8' : '#0B132B',
               borderColor: '#38BDF8',
             }}
-            className={isListening ? 'live-pulse-blue' : ''}
-            title="Voice input (Microphone)"
+             title="Ask AURA Guide by voice"
+             aria-label={isListening ? 'Listening for your question' : 'Ask AURA Guide by voice'}
+             type="button"
           >
             <Mic size={18} color={isListening ? '#070D1E' : '#38BDF8'} />
           </button>
@@ -232,15 +234,18 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={isListening ? 'Listening to voice query...' : 'Ask Aura AI about telemetry, falls, or obstacles...'}
-            style={styles.chatInputField}
+             placeholder={isListening ? 'Listening…' : 'Ask about safety, health, or the path ahead…'}
+             style={styles.chatInputField}
+             className="dadaist-chat-input"
           />
 
           <button
             onClick={handleSend}
-            className="pill-btn-primary"
-            style={styles.sendActionBtn}
-            title="Send query"
+             className="pill-btn-primary dadaist-chat-send"
+             style={styles.sendActionBtn}
+             title="Send question"
+             aria-label="Send question"
+             type="button"
           >
             <Send size={16} color="#070D1E" />
           </button>

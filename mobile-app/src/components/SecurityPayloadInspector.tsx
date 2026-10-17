@@ -11,14 +11,14 @@ export const SecurityPayloadInspector: React.FC<SecurityPayloadInspectorProps> =
 
   return (
     <div style={styles.outerWrapper}>
-      <div className="deep-abyss-card" style={styles.card}>
+      <div className="deep-abyss-card dadaist-dev-panel" style={styles.card}>
         <div style={styles.header}>
           <div>
             <span className="eyebrow-label">CRYPTOGRAPHIC ATTESTATION • AES-256-GCM</span>
             <h3 style={styles.title}>Packet Decryption & Replay Verification</h3>
           </div>
 
-          <div style={styles.authBadge}>
+          <div style={styles.authBadge} className="auth-badge">
             <Key size={13} color="#38BDF8" style={{ marginRight: 6 }} />
             <span style={styles.authBadgeText}>Firmware Authenticated</span>
           </div>
@@ -26,22 +26,22 @@ export const SecurityPayloadInspector: React.FC<SecurityPayloadInspectorProps> =
 
         {latestLog && (
           <div style={styles.statsRow}>
-            <div style={styles.statTile}>
+             <div style={styles.statTile} className="stat-tile">
               <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>ORIGIN NODE</span>
               <span style={styles.statValue}>{latestLog.dev_id}</span>
             </div>
 
-            <div style={styles.statTile}>
+             <div style={styles.statTile} className="stat-tile">
               <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>MONOTONIC COUNTER</span>
               <span style={{ ...styles.statValue, color: '#38BDF8' }}>#{latestLog.cnt}</span>
             </div>
 
-            <div style={styles.statTile}>
+             <div style={styles.statTile} className="stat-tile">
               <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>GCM TAG AUTH</span>
               <span style={styles.statValue}>128-BIT VERIFIED</span>
             </div>
 
-            <div style={styles.statTile}>
+             <div style={styles.statTile} className="stat-tile">
               <span className="eyebrow-label" style={{ color: '#8CA2C2' }}>DECRYPT TIME</span>
               <span style={{ ...styles.statValue, color: '#38BDF8' }}>{latestLog.latencyMs || 1.8} ms</span>
             </div>
@@ -49,7 +49,7 @@ export const SecurityPayloadInspector: React.FC<SecurityPayloadInspectorProps> =
         )}
 
         {/* Terminal Log Stream */}
-        <div style={styles.terminalWindow}>
+         <div style={styles.terminalWindow} className="terminal-window">
           <div style={styles.terminalHeader}>
             <Terminal size={14} color="#8CA2C2" style={{ marginRight: 6 }} />
             <span style={styles.terminalTitle}>Live Broker Telemetry Ingestion Log</span>

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Activity, Thermometer, Compass, CloudRain } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { UserRole } from '../types/telemetry';
 
 interface VitalsCardProps {
-  heartRate: number;
-  spo2: number;
+  heartRate?: number;
+  spo2?: number;
   altitudeM?: number;
   pressureHpa?: number;
   temperatureC?: number;
+  role?: UserRole;
 }
 
 interface SparklinePoint {
@@ -24,17 +26,19 @@ interface SparklinePoint {
  * - Critical: < 50 or > 120 BPM / < 90% SpO2
  */
 export const VitalsCard: React.FC<VitalsCardProps> = ({
-  heartRate = 72,
-  spo2 = 98,
-  altitudeM = 120.5,
-  pressureHpa = 1013.25,
-  temperatureC = 36.6,
+  heartRate,
+  spo2,
+  altitudeM,
+  pressureHpa,
+  temperatureC,
+  role = 'caregiver',
 }) => {
   const [trendData, setTrendData] = useState<SparklinePoint[]>([]);
 
   useEffect(() => {
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     setTrendData((prev) => {
+      if (heartRate === undefined) return prev;
       const next = [...prev, { time: timeStr, hr: heartRate }];
       if (next.length > 20) next.shift();
       return next;
@@ -42,117 +46,117 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({
   }, [heartRate]);
 
   // HR Threshold Evaluation
-  const isHrCritical = heartRate < 50 || heartRate > 120;
-  const isHrWarning = !isHrCritical && (heartRate < 60 || heartRate > 100);
-  const hrStatusText = isHrCritical ? 'Critical' : isHrWarning ? 'Warning' : 'Normal';
-  const hrBadgeColor = isHrCritical ? '#DC2626' : isHrWarning ? '#D97706' : '#059669';
+  const isHrCritical = heartRate !== undefined && (heartRate < 50 || heartRate > 120);
+  const isHrWarning = heartRate !== undefined && !isHrCritical && (heartRate < 60 || heartRate > 100);
+  const hrStatusText = heartRate === undefined ? 'No data' : isHrCritical ? 'Critical' : isHrWarning ? 'Needs attention' : 'In usual range';
+  const hrBadgeColor = heartRate === undefined ? '#64748B' : isHrCritical ? '#DC2626' : isHrWarning ? '#D97706' : '#059669';
 
   // SpO2 Threshold Evaluation
-  const isSpO2Critical = spo2 < 90;
-  const isSpO2Warning = !isSpO2Critical && spo2 < 95;
-  const spO2StatusText = isSpO2Critical ? 'Critical' : isSpO2Warning ? 'Warning' : 'Normal';
-  const spO2BadgeColor = isSpO2Critical ? '#DC2626' : isSpO2Warning ? '#D97706' : '#059669';
+  const isSpO2Critical = spo2 !== undefined && spo2 < 90;
+  const isSpO2Warning = spo2 !== undefined && !isSpO2Critical && spo2 < 95;
+  const spO2StatusText = spo2 === undefined ? 'No data' : isSpO2Critical ? 'Critical' : isSpO2Warning ? 'Needs attention' : 'In usual range';
+  const spO2BadgeColor = spo2 === undefined ? '#64748B' : isSpO2Critical ? '#DC2626' : isSpO2Warning ? '#D97706' : '#059669';
 
   return (
-    <section style={styles.sectionWrapper}>
-      <div className="mint-frost-card" style={styles.card}>
+    <section style={styles.sectionWrapper} className="collage-vitals">
+      <div className="mint-frost-card collage-vitals__card" style={styles.card}>
         {/* Header */}
         <div style={styles.cardHeader}>
           <div>
-            <span className="eyebrow-label-dark">MAX30100 OPTICAL SENSOR • BMP280 TELEMETRY</span>
-            <h2 style={styles.headline}>Live Patient Vitals & Biometrics</h2>
+            <span className="eyebrow-label-dark">{role === 'caregiver' ? 'HEALTH SNAPSHOT' : 'YOUR HEALTH'}</span>
+            <h2 style={styles.headline}>{role === 'caregiver' ? 'Wearer health snapshot' : 'Your health snapshot'}</h2>
             <p style={styles.subhead}>
-              Real-time physiological telemetry ingested from the Smart Band with automated clinical threshold classification.
+              {role === 'caregiver' ? 'Current readings from the Smart Band, with clear freshness and attention states.' : 'Current readings from your Smart Band. AURA Assist is not a medical diagnostic device.'}
             </p>
           </div>
 
-          <div style={styles.statusPillDark}>
+          <div style={styles.statusPillDark} className="collage-vitals__status">
             <Activity size={15} color="#0B132B" />
-            <span style={styles.statusPillText}>Telemetry Trace Active</span>
+            <span style={styles.statusPillText}>{heartRate !== undefined || spo2 !== undefined ? 'Reading available' : 'Waiting for reading'}</span>
           </div>
         </div>
 
         {/* Primary Metrics Grid (HR & SpO2 & Environment) */}
         <div style={styles.metricsRow}>
           {/* Heart Rate Display */}
-          <div style={styles.metricCard}>
+          <div style={styles.metricCard} className="collage-vitals__metric-card">
             <div style={styles.metricTop}>
               <div style={styles.iconCircleRed}>
                 <Heart size={18} color="#DC2626" />
               </div>
-              <span style={styles.metricName}>HEART RATE (HR)</span>
+              <span style={styles.metricName} className="metric-name">HEART RATE (HR)</span>
             </div>
 
             <div style={styles.largeNumRow}>
-              <span style={styles.largeNum}>{heartRate}</span>
+              <span style={styles.largeNum} className="large-num">{heartRate ?? '—'}</span>
               <span style={styles.largeUnit}>BPM</span>
             </div>
 
-            <div style={{ ...styles.thresholdBadge, backgroundColor: `${hrBadgeColor}15`, color: hrBadgeColor, borderColor: `${hrBadgeColor}40` }}>
+            <div className={`collage-vitals__badge ${isHrCritical ? 'collage-vitals__badge--critical' : isHrWarning ? 'collage-vitals__badge--warning' : heartRate === undefined ? 'collage-vitals__badge--empty' : 'collage-vitals__badge--ok'}`} style={{ ...styles.thresholdBadge, backgroundColor: `${hrBadgeColor}15`, color: hrBadgeColor, borderColor: `${hrBadgeColor}40` }}>
               <span style={{ ...styles.badgeDot, backgroundColor: hrBadgeColor }} />
-              <span>Status: {hrStatusText} (60–100 Nom)</span>
+              <span>{hrStatusText}</span>
             </div>
           </div>
 
           {/* Blood Oxygen SpO2 Display */}
-          <div style={styles.metricCard}>
+          <div style={styles.metricCard} className="collage-vitals__metric-card">
             <div style={styles.metricTop}>
               <div style={styles.iconCircleTeal}>
                 <Activity size={18} color="#0284C7" />
               </div>
-              <span style={styles.metricName}>BLOOD OXYGEN (SpO2)</span>
+              <span style={styles.metricName} className="metric-name">BLOOD OXYGEN (SpO2)</span>
             </div>
 
             <div style={styles.largeNumRow}>
-              <span style={styles.largeNum}>{spo2}</span>
+              <span style={styles.largeNum} className="large-num">{spo2 ?? '—'}</span>
               <span style={styles.largeUnit}>%</span>
             </div>
 
-            <div style={{ ...styles.thresholdBadge, backgroundColor: `${spO2BadgeColor}15`, color: spO2BadgeColor, borderColor: `${spO2BadgeColor}40` }}>
+            <div className={`collage-vitals__badge ${isSpO2Critical ? 'collage-vitals__badge--critical' : isSpO2Warning ? 'collage-vitals__badge--warning' : spo2 === undefined ? 'collage-vitals__badge--empty' : 'collage-vitals__badge--ok'}`} style={{ ...styles.thresholdBadge, backgroundColor: `${spO2BadgeColor}15`, color: spO2BadgeColor, borderColor: `${spO2BadgeColor}40` }}>
               <span style={{ ...styles.badgeDot, backgroundColor: spO2BadgeColor }} />
-              <span>Status: {spO2StatusText} (≥95% Nom)</span>
+              <span>{spO2StatusText}</span>
             </div>
           </div>
 
           {/* Environmental Sensing (BMP280) */}
-          <div style={styles.metricCard}>
+          <div style={styles.metricCard} className="collage-vitals__metric-card">
             <div style={styles.metricTop}>
               <div style={styles.iconCircleBlue}>
                 <Compass size={18} color="#2563EB" />
               </div>
-              <span style={styles.metricName}>BAROMETRIC & ALTITUDE</span>
+              <span style={styles.metricName} className="metric-name">BAROMETRIC & ALTITUDE</span>
             </div>
 
             <div style={styles.envGrid}>
               <div style={styles.envItem}>
-                <span style={styles.envLabel}>ALTITUDE</span>
-                <span style={styles.envValue}>{altitudeM} m</span>
+                <span style={styles.envLabel} className="env-label">ALTITUDE</span>
+                <span style={styles.envValue} className="env-value">{altitudeM !== undefined ? `${altitudeM} m` : '—'}</span>
               </div>
               <div style={styles.envItem}>
-                <span style={styles.envLabel}>PRESSURE</span>
-                <span style={styles.envValue}>{pressureHpa} hPa</span>
+                <span style={styles.envLabel} className="env-label">PRESSURE</span>
+                <span style={styles.envValue} className="env-value">{pressureHpa !== undefined ? `${pressureHpa} hPa` : '—'}</span>
               </div>
               <div style={styles.envItem}>
-                <span style={styles.envLabel}>TEMPERATURE</span>
-                <span style={styles.envValue}>{temperatureC}°C</span>
+                <span style={styles.envLabel} className="env-label">TEMPERATURE</span>
+                <span style={styles.envValue} className="env-value">{temperatureC !== undefined ? `${temperatureC}°C` : '—'}</span>
               </div>
             </div>
 
-            <div style={styles.normalEnvPill}>
-              <span>BMP280 Calibrated</span>
+              <div style={styles.normalEnvPill} className="collage-vitals__env-pill">
+              <span>{altitudeM !== undefined || pressureHpa !== undefined ? 'Environment available' : 'Environment unavailable'}</span>
             </div>
           </div>
         </div>
 
         {/* Real-Time Waveform Trace Sparkline */}
-        <div style={styles.sparklineBox}>
+        <div style={styles.sparklineBox} className="collage-vitals__sparkline">
           <div style={styles.sparklineHeader}>
-            <span style={styles.sparklineTitle}>HEART RATE REAL-TIME WAVEFORM TRACE (BPM)</span>
-            <span style={styles.sparklineLegend}>Sampling Rate: 50 Hz</span>
+            <span style={styles.sparklineTitle}>HEART RATE TREND (BPM)</span>
+            <span style={styles.sparklineLegend}>Live when data is available</span>
           </div>
 
-          <ResponsiveContainer width="100%" height={90}>
-            <AreaChart data={trendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+            {trendData.length > 0 ? <ResponsiveContainer width="100%" height={90}>
+             <AreaChart data={trendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="mintGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#38BDF8" stopOpacity={0.35} />
@@ -172,7 +176,7 @@ export const VitalsCard: React.FC<VitalsCardProps> = ({
               />
               <Area type="monotone" dataKey="hr" stroke="#0284C7" strokeWidth={2.5} fillOpacity={1} fill="url(#mintGrad)" />
             </AreaChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer> : <div style={styles.noTrendData}>Waiting for a heart-rate reading.</div>}
         </div>
       </div>
     </section>
@@ -374,5 +378,12 @@ const styles = {
   sparklineLegend: {
     fontSize: '10px',
     color: '#64748B',
+  },
+  noTrendData: {
+    minHeight: '58px',
+    display: 'flex',
+    alignItems: 'center',
+    color: '#64748B',
+    fontSize: '13px',
   },
 };

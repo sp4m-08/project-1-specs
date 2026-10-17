@@ -1,6 +1,6 @@
 {
   "appId": "com.aiot.assistivesuite",
-  "appName": "AIoT Assistive Suite",
+  "appName": "AURA Assist",
   "webDir": "dist",
   "server": {
     "androidScheme": "https",

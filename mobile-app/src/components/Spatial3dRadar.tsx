@@ -109,43 +109,51 @@ export const Spatial3dRadar: React.FC<Spatial3dRadarProps> = ({
   }, [pointCloud]);
 
   return (
-    <div style={styles.outerWrapper}>
-      <div className="deep-abyss-card" style={styles.card}>
+    <div style={styles.outerWrapper} className="collage-radar">
+      <div className="deep-abyss-card collage-radar__card" style={styles.card}>
         <div style={styles.header}>
           <div>
-            <span className="eyebrow-label">3D SPATIAL OBSTACLE MAPPING • 59 CELLS</span>
-            <h3 style={styles.title}>Kinematic Radar & Volumetric Grid</h3>
+            <span className="eyebrow-label">PATH AWARENESS</span>
+            <h3 style={styles.title}>Nearby objects</h3>
           </div>
 
-          <div style={styles.legendCluster}>
+          <div style={styles.legendCluster} className="collage-radar__legend">
             <div style={styles.legendItem}>
               <div style={{ ...styles.legendDot, backgroundColor: '#FFCD48' }} />
-              <span style={styles.legendText}>Hazard (&lt;0.8m)</span>
+              <span style={styles.legendText}>Very near (&lt;0.8m)</span>
             </div>
             <div style={styles.legendItem}>
               <div style={{ ...styles.legendDot, backgroundColor: '#93C5FD' }} />
-              <span style={styles.legendText}>Proximity (0.8–1.2m)</span>
+              <span style={styles.legendText}>Nearby (0.8–1.2m)</span>
             </div>
             <div style={styles.legendItem}>
               <div style={{ ...styles.legendDot, backgroundColor: '#38BDF8' }} />
-              <span style={styles.legendText}>Clear (&gt;1.2m)</span>
+              <span style={styles.legendText}>Further away (&gt;1.2m)</span>
             </div>
           </div>
         </div>
 
-        <div style={styles.canvasContainer}>
-          <canvas ref={canvasRef} width={460} height={310} style={styles.canvas} />
+        <div style={styles.canvasContainer} className="collage-radar__canvas-wrap">
+          <canvas
+            ref={canvasRef}
+            width={460}
+            height={310}
+            style={styles.canvas}
+            role="img"
+            aria-label={`${pointCloud.length} nearby objects mapped. ${pointCloud.filter((point) => point.isAlertRange).length} are in the very near range.`}
+          />
+          <p className="sr-only">{pointCloud.length} nearby objects mapped. {pointCloud.filter((point) => point.isAlertRange).length} very near objects detected.</p>
         </div>
 
-        <div style={styles.metaRow}>
-          <div style={styles.metaBadge}>
-            <span style={styles.metaLabel}>HEAD ORIENTATION VECTOR:</span>
+        <div style={styles.metaRow} className="collage-radar__meta">
+          <div style={styles.metaBadge} className="collage-radar__meta-badge">
+            <span style={styles.metaLabel}>HEAD ORIENTATION:</span>
             <span style={styles.metaValue}>Yaw: {yawDeg}° • Pitch: {pitchDeg}°</span>
           </div>
 
-          <div style={styles.metaBadge}>
-            <span style={styles.metaLabel}>ACTIVE TOPOLOGY:</span>
-            <span style={styles.metaValue}>{pointCloud.length} Ultrasonic Cells</span>
+          <div style={styles.metaBadge} className="collage-radar__meta-badge">
+            <span style={styles.metaLabel}>OBJECTS MAPPED:</span>
+            <span style={styles.metaValue}>{pointCloud.length}</span>
           </div>
         </div>
       </div>

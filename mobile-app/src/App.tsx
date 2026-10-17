@@ -1,17 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Mic,
-  Layers,
-  ShieldCheck,
-  Settings,
-  Radio,
   Volume2,
   VolumeX,
   Vibrate,
   Sparkles,
-  RefreshCw,
   Bell,
   Smartphone,
+  ShieldCheck,
 } from 'lucide-react';
 import { DashboardScreen } from './components/DashboardScreen';
 import { Spatial3dRadar } from './components/Spatial3dRadar';
@@ -19,10 +15,14 @@ import { SecurityPayloadInspector } from './components/SecurityPayloadInspector'
 import { AIChatDrawer } from './components/AIChatDrawer';
 import { BottomNavBar, ActiveTab } from './components/BottomNavBar';
 import { SplashScreen } from './components/SplashScreen';
-import { MobileStatusBar } from './components/MobileStatusBar';
+import { RoleSelectionScreen } from './components/RoleSelectionScreen';
+import { EmergencyContactSetup } from './components/EmergencyContactSetup';
+import { AlertsScreen } from './components/AlertsScreen';
+import { SimulatorControlBar } from './components/SimulatorControlBar';
 import { ToastNotification, ToastData } from './components/ToastNotification';
 import { mobileUx } from './utils/haptics';
 import { Capacitor } from '@capacitor/core';
+import { emergencyActions } from './native/emergencyActions';
 import {
   SpecsTelemetry,
   SpecsVision,
@@ -33,21 +33,36 @@ import {
   DecryptionLog,
   ChatMessage,
   DeviceLastSeen,
+  UserRole,
+  SafetyAlert,
 } from './types/telemetry';
+import {
+  EMERGENCY_CONTACT_STORAGE_KEY,
+  EmergencyContact,
+  loadEmergencyContact,
+} from './types/emergency';
 
 /**
- * App — Production Mobile Shell & Root Component for Secure AIoT Assistive Suite
- * Theme: Cyber-Medical Sapphire Obsidian & Electric Azure Blue (#0B132B / #38BDF8)
+ * App — AURA Assist shell for the wearer and caregiver demo experiences.
  * Features:
  * - Native Mobile Boot Splash Screen & Handshake Simulation
- * - Mobile System Status Bar (Clock, 5G, Wi-Fi, Battery, Dynamic Island)
  * - In-App Native Toast Notifications
  * - Device Vibration Haptics & Synthetic Touch Audio Cues
- * - Text-To-Speech Clinical Voice Assist
+ * - Text-to-speech safety assistance
  */
 export const App: React.FC = () => {
   // Mobile Bootloader Splash Screen State
   const [showSplash, setShowSplash] = useState(true);
+  const finishSplash = useCallback(() => setShowSplash(false), []);
+  const [role, setRole] = useState<UserRole | null>(() => {
+    const saved = localStorage.getItem('AURA_USER_ROLE');
+    return saved === 'wearer' || saved === 'caregiver' ? saved : null;
+  });
+  const [emergencyContact, setEmergencyContact] = useState<EmergencyContact | null>(loadEmergencyContact);
+  const [isContactEditorOpen, setIsContactEditorOpen] = useState(false);
+  const lastDispatchedAlertIdRef = useRef<string | null>(
+    localStorage.getItem('AURA_LAST_EMERGENCY_DISPATCH_ID')
+  );
 
   // Connection & Navigation
   const [wsConnected, setWsConnected] = useState(false);
@@ -56,6 +71,9 @@ export const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showDeveloperTools, setShowDeveloperTools] = useState(
+    () => import.meta.env.DEV && localStorage.getItem('AURA_DEVELOPER_TOOLS') === 'true'
+  );
 
   // In-App Toast Notification Queue
   const [toasts, setToasts] = useState<ToastData[]>([]);
@@ -76,6 +94,7 @@ export const App: React.FC = () => {
     band: null,
   });
   const [activeAlert, setActiveAlert] = useState<FallAlertState | null>(null);
+  const [alerts, setAlerts] = useState<SafetyAlert[]>([]);
   const [pointCloud, setPointCloud] = useState<ObstacleCell3D[]>([]);
   const [securityLogs, setSecurityLogs] = useState<DecryptionLog[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -85,7 +104,7 @@ export const App: React.FC = () => {
     const saved = localStorage.getItem('AIOT_SERVER_HOST');
     if (saved) return saved;
     if (Capacitor.isNativePlatform()) {
-      return '10.92.95.114';
+      return 'localhost';
     }
     return (
       window.location.hostname && window.location.hostname !== 'localhost'
@@ -124,6 +143,95 @@ export const App: React.FC = () => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const selectRole = useCallback((nextRole: UserRole) => {
+    localStorage.setItem('AURA_USER_ROLE', nextRole);
+    setRole(nextRole);
+    setActiveTab('dashboard');
+    setIsChatOpen(false);
+    addToast(
+      nextRole === 'caregiver' ? 'Caregiver view ready' : 'Wearer view ready',
+      nextRole === 'caregiver'
+        ? 'Safety, health, and wearable updates are ready to review.'
+        : 'Large safety actions and spoken assistance are ready.',
+      'success'
+    );
+  }, [addToast]);
+
+  const handleChangeRole = useCallback(() => {
+    localStorage.removeItem('AURA_USER_ROLE');
+    setRole(null);
+    setActiveTab('dashboard');
+    setIsChatOpen(false);
+  }, []);
+
+  const handleAcknowledgeAlert = useCallback((alertId: string) => {
+    setAlerts((previous) => previous.map((alert) => (
+      alert.id === alertId ? { ...alert, acknowledged: true } : alert
+    )));
+  }, []);
+
+  const addSafetyAlert = useCallback((alert: SafetyAlert) => {
+    setAlerts((previous) => [alert, ...previous.filter((item) => item.id !== alert.id)].slice(0, 40));
+  }, []);
+
+  const handleSaveEmergencyContact = useCallback(async (contact: EmergencyContact) => {
+    if (Capacitor.isNativePlatform()) {
+      await emergencyActions.requestPermissions();
+    }
+
+    localStorage.setItem(EMERGENCY_CONTACT_STORAGE_KEY, JSON.stringify(contact));
+    setEmergencyContact(contact);
+    setIsContactEditorOpen(false);
+    addToast(
+      'Emergency contact saved',
+      Capacitor.isNativePlatform()
+        ? `${contact.name} can receive the native fall SMS and call.`
+        : 'The contact is saved for the Android build.',
+      'success'
+    );
+  }, [addToast]);
+
+  const dispatchEmergencyAlert = useCallback(async (alert: FallAlertState) => {
+    if (alert.status !== 'ESCALATED_TO_CAREGIVER') return;
+
+    if (!emergencyContact) {
+      addToast(
+        'Emergency contact missing',
+        'Open More and add a contact before relying on automatic fall actions.',
+        'alert'
+      );
+      return;
+    }
+
+    if (lastDispatchedAlertIdRef.current === alert.id) return;
+    lastDispatchedAlertIdRef.current = alert.id;
+
+    const message = [
+      'AURA Assist emergency alert:',
+      'The wearer did not silence a possible fall alert within the response window.',
+      `Please check on ${emergencyContact.name} now.`,
+    ].join(' ');
+
+    try {
+      await emergencyActions.sendEmergencyAlert({
+        phone: emergencyContact.phone,
+        message,
+      });
+      localStorage.setItem('AURA_LAST_EMERGENCY_DISPATCH_ID', alert.id);
+      addToast(
+        'Emergency actions started',
+        `Native SMS sent and call started for ${emergencyContact.name}.`,
+        'alert'
+      );
+    } catch (error) {
+      addToast(
+        'Emergency actions failed',
+        error instanceof Error ? error.message : 'Android could not start the native SMS and call.',
+        'alert'
+      );
+    }
+  }, [addToast, emergencyContact]);
+
   // Mobile UX Toggles
   const handleToggleSound = () => {
     const next = !soundEnabled;
@@ -150,8 +258,8 @@ export const App: React.FC = () => {
     setVoiceAssistEnabled(next);
     mobileUx.setVoiceAssistEnabled(next);
     if (next) {
-      mobileUx.speak('Clinical voice assistant activated.');
-      addToast('Voice Assistant Active', 'Text-to-speech clinical alerts enabled.', 'success');
+       mobileUx.speak('Spoken safety alerts activated.');
+       addToast('Spoken safety alerts active', 'AURA Assist will read important updates aloud.', 'success');
     }
   };
 
@@ -191,8 +299,11 @@ export const App: React.FC = () => {
                   setSpecs(data.latestState.specs);
                   setSpecsVision(data.latestState.specsVision);
                   setCane(data.latestState.cane);
-                  setBand(data.latestState.band);
-                  setActiveAlert(data.latestState.activeAlert);
+                   setBand(data.latestState.band);
+                   setActiveAlert(data.latestState.activeAlert);
+                   if (data.latestState.activeAlert?.status === 'ESCALATED_TO_CAREGIVER') {
+                     void dispatchEmergencyAlert(data.latestState.activeAlert);
+                   }
                   if (data.latestState.securityLogs) setSecurityLogs(data.latestState.securityLogs);
                   if (data.latestState.deviceLastSeen) setDeviceLastSeen(data.latestState.deviceLastSeen);
                 }
@@ -223,16 +334,45 @@ export const App: React.FC = () => {
 
               case 'FALL_ALERT_UPDATE':
                 setActiveAlert(data);
+                if (data.status === 'ESCALATED_TO_CAREGIVER') {
+                  void dispatchEmergencyAlert(data);
+                }
+                if (data.status !== 'IDLE') {
+                  addSafetyAlert({
+                    id: data.id,
+                    level: data.confidence === 'HIGH' ? 'critical' : 'warning',
+                    title: data.confidence === 'HIGH' ? 'Fall likely confirmed' : 'Possible fall detected',
+                    message: data.message,
+                    timestamp: data.timestamp || Date.now(),
+                    source: 'fall',
+                  });
+                }
                 if (data.status === 'HIGH_CONFIDENCE_ALERT') {
                   mobileUx.triggerHaptic('sos');
                   mobileUx.playTone('sos');
-                  mobileUx.speak('High confidence fall alert confirmed. Emergency call active.');
+                   mobileUx.speak('High confidence fall alert confirmed. Review the alert now.');
                   addToast('Dual Fall Impact', 'Algorithm 2 Dual-Device Confirmation Active!', 'alert');
-                } else if (data.status === 'WARNING_PENDING') {
+                } else if (data.status === 'LOW_CONFIDENCE_WARNING' || data.status === 'WARNING_PENDING') {
                   mobileUx.triggerHaptic('warning');
                   mobileUx.playTone('alert');
                   addToast('Impact Warning', 'Single device impact detected (awaiting fusion window)', 'warning');
                 }
+                break;
+
+              case 'HEALTH_ALERT':
+                addSafetyAlert({
+                  id: `health_${data.timestamp || Date.now()}_${data.level}`,
+                  level: data.level === 'CRITICAL' ? 'critical' : 'warning',
+                  title: data.level === 'CRITICAL' ? 'Health needs attention' : 'Health update',
+                  message: data.message,
+                  timestamp: data.timestamp || Date.now(),
+                  source: 'health',
+                });
+                addToast(
+                  data.level === 'CRITICAL' ? 'Health alert' : 'Health update',
+                  data.message,
+                  data.level === 'CRITICAL' ? 'alert' : 'warning'
+                );
                 break;
 
               case 'SPATIAL_POINT_UPDATE':
@@ -259,7 +399,7 @@ export const App: React.FC = () => {
       if (reconnectTimer) clearTimeout(reconnectTimer);
       if (socket) socket.close();
     };
-  }, [wsUrl, addToast]);
+  }, [wsUrl, addToast, addSafetyAlert, dispatchEmergencyAlert]);
 
   // HTTP Telemetry Sync Poller (Backup sync for mobile devices & public tunnels)
   useEffect(() => {
@@ -289,8 +429,13 @@ export const App: React.FC = () => {
           if (data.latestState.specs) setSpecs(data.latestState.specs);
           if (data.latestState.specsVision) setSpecsVision(data.latestState.specsVision);
           if (data.latestState.cane) setCane(data.latestState.cane);
-          if (data.latestState.band) setBand(data.latestState.band);
-          if (data.latestState.activeAlert !== undefined) setActiveAlert(data.latestState.activeAlert);
+           if (data.latestState.band) setBand(data.latestState.band);
+           if (data.latestState.activeAlert !== undefined) {
+             setActiveAlert(data.latestState.activeAlert);
+             if (data.latestState.activeAlert?.status === 'ESCALATED_TO_CAREGIVER') {
+               void dispatchEmergencyAlert(data.latestState.activeAlert);
+             }
+           }
           if (data.latestState.securityLogs?.length) setSecurityLogs(data.latestState.securityLogs);
         }
       } catch (err) {
@@ -305,7 +450,7 @@ export const App: React.FC = () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [apiBase]);
+  }, [apiBase, dispatchEmergencyAlert]);
 
   // Host IP Configuration Dialog
   const handleConfigureServer = () => {
@@ -344,7 +489,7 @@ export const App: React.FC = () => {
           addToast('Dual Fall Triggered', 'Simulating synchronised cane + band fall impact', 'alert');
           break;
         case 'SOS_PRESS':
-          addToast('SOS Emergency Signal', 'Emergency caregiver dispatch initiated', 'alert');
+           addToast('SOS demo signal sent', 'The local bridge received the SOS action. No call or message was placed.', 'alert');
           break;
         case 'SOS_CANCEL':
         case 'CLEAR_FALL':
@@ -366,17 +511,17 @@ export const App: React.FC = () => {
           }).catch(() => {});
           break;
         case 'CURRENCY_500':
-          addToast('Glasses YOLO Vision', 'Detected Indian Currency ₹500 Note', 'info');
+           addToast('Smart Glasses update', 'A currency note was detected ahead.', 'info');
           break;
         case 'PEDESTRIAN_CROSSING':
-          addToast('Glasses YOLO Vision', 'Detected Pedestrian Crosswalk ahead', 'info');
+           addToast('Smart Glasses update', 'A person or crossing was detected ahead.', 'info');
           break;
         default:
           addToast('Hardware Command', `Dispatched ${action} to simulator`, 'info');
           break;
       }
 
-      await fetch(`${apiBase}/api/simulator/trigger`, {
+      const response = await fetch(`${apiBase}/api/simulator/trigger`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -384,6 +529,9 @@ export const App: React.FC = () => {
         },
         body: JSON.stringify({ action, value }),
       });
+      if (!response.ok) {
+        throw new Error(`Simulator request failed with ${response.status}`);
+      }
     } catch (err) {
       console.error('[Simulator Trigger Error]:', err);
       addToast('Simulator Offline', 'Unable to reach backend REST endpoint', 'alert');
@@ -423,101 +571,108 @@ export const App: React.FC = () => {
       }
     } catch (err) {
       console.error('[AI Chatbot Query Error]:', err);
-      addToast('Aura AI Offline', 'Could not query assistant server', 'alert');
+      addToast('AURA Guide offline', 'Could not query the assistant service. You can try again.', 'alert');
     }
   };
 
   // Re-sync hardware trigger from top bar
   const handleResync = () => {
-    addToast('Telemetry Synchronized', '50 Hz AES-GCM stream verified across all 3 nodes', 'success');
+    addToast('Connection refreshed', 'AURA Assist is checking the latest wearable updates.', 'success');
   };
 
   return (
-    <div style={styles.appShell}>
+    <div style={styles.appShell} className="dadaist-shell grunge-theme">
       {/* 1. Authentic Mobile App Splash Screen / Bootloader */}
       {showSplash && (
         <SplashScreen
-          onFinish={() => setShowSplash(false)}
+          onFinish={finishSplash}
           serverHost={serverHost}
         />
       )}
 
-      {/* 2. Top Native Mobile Status Bar (Clock, 5G, Wi-Fi, Battery, Dynamic Island) */}
-      <MobileStatusBar
-        isConnected={isConnected}
-        onToggleSound={handleToggleSound}
-        isSoundEnabled={soundEnabled}
-      />
-
-      {/* 3. In-App Floating Toast Notification Center */}
+      {/* In-app notification center */}
       <ToastNotification toasts={toasts} onDismiss={removeToast} />
 
-      {/* 4. Scrollable Main Viewport */}
-      <main style={styles.contentViewport}>
-        <div className="responsive-app-container">
-          {/* TAB 1: Main Telemetry Dashboard */}
-          {activeTab === 'dashboard' && (
-            <DashboardScreen
-              isConnected={isConnected}
-              serverHost={serverHost}
-              onConfigureServer={handleConfigureServer}
-              onRefresh={handleResync}
-              specs={specs}
-              specsVision={specsVision}
-              cane={cane}
-              band={band}
-              deviceLastSeen={deviceLastSeen}
-              activeAlert={activeAlert}
-              onCancelAlert={() => handleTriggerAction('SOS_CANCEL')}
-              onTriggerAction={handleTriggerAction}
-              onOpenChat={() => {
-                mobileUx.triggerHaptic('light');
-                mobileUx.playTone('tap');
-                setIsChatOpen(true);
-              }}
-            />
-          )}
+      {!role ? (
+        <RoleSelectionScreen onSelectRole={selectRole} />
+      ) : !emergencyContact ? (
+        <EmergencyContactSetup required onSave={handleSaveEmergencyContact} />
+      ) : isContactEditorOpen ? (
+        <EmergencyContactSetup
+          initialContact={emergencyContact}
+          onSave={handleSaveEmergencyContact}
+          onCancel={() => setIsContactEditorOpen(false)}
+        />
+      ) : (
+        <>
+          {/* Scrollable main viewport */}
+          <main style={styles.contentViewport}>
+            <div className="responsive-app-container">
+              {activeTab === 'dashboard' && (
+                <DashboardScreen
+                  role={role}
+                  wearerName="Demo wearer"
+                  isConnected={isConnected}
+                  serverHost={serverHost}
+                  onConfigureServer={handleConfigureServer}
+                  onRefresh={handleResync}
+                  specs={specs}
+                  specsVision={specsVision}
+                  cane={cane}
+                  band={band}
+                  deviceLastSeen={deviceLastSeen}
+                  activeAlert={activeAlert}
+                  onCancelAlert={() => handleTriggerAction('SOS_CANCEL')}
+                  onTriggerAction={handleTriggerAction}
+                  onOpenChat={() => {
+                    mobileUx.triggerHaptic('light');
+                    mobileUx.playTone('tap');
+                    setIsChatOpen(true);
+                  }}
+                />
+              )}
 
-          {/* TAB 2: 3D Spatial Radar Perception */}
-          {activeTab === 'spatial' && (
-            <div style={styles.subviewPadding} className="tab-transition-view">
-              <div style={styles.subviewHeader}>
-                <span className="eyebrow-label">SPATIAL TOPOLOGY RADAR</span>
-                <h2 style={styles.subviewTitle}>3D Ultrasonic Obstacle Map</h2>
-              </div>
-              <Spatial3dRadar
-                pointCloud={pointCloud}
-                pitchDeg={specs?.pitch_deg}
-                yawDeg={specs?.yaw_deg}
-              />
-            </div>
-          )}
+              {activeTab === 'spatial' && (
+                <div style={styles.subviewPadding} className="tab-transition-view dadaist-shell">
+                  <div style={styles.subviewHeader} className="dadaist-subview-header">
+                    <span className="eyebrow-label">PATH AWARENESS</span>
+                    <h1 style={styles.subviewTitle}>{role === 'caregiver' ? 'Wearer path awareness' : 'What is ahead?'}</h1>
+                    <p className="page-description">Nearby objects detected by the Smart Glasses are shown here. This is a simulation view when demo data is active.</p>
+                  </div>
+                  <Spatial3dRadar
+                    pointCloud={pointCloud}
+                    pitchDeg={specs?.pitch_deg}
+                    yawDeg={specs?.yaw_deg}
+                  />
+                </div>
+              )}
 
-          {/* TAB 3: AES-256-GCM Firmware Security Inspector */}
-          {activeTab === 'security' && (
-            <div style={styles.subviewPadding} className="tab-transition-view">
-              <div style={styles.subviewHeader}>
-                <span className="eyebrow-label">CRYPTOGRAPHIC ATTESTATION</span>
-                <h2 style={styles.subviewTitle}>AES-256-GCM Pipeline Inspector</h2>
-              </div>
-              <SecurityPayloadInspector logs={securityLogs} />
-            </div>
-          )}
+              {activeTab === 'alerts' && (
+                <AlertsScreen alerts={alerts} role={role} onAcknowledge={handleAcknowledgeAlert} />
+              )}
 
-          {/* TAB 4: Console Settings & Mobile UX Configuration */}
-          {activeTab === 'settings' && (
-            <div style={styles.subviewPadding} className="tab-transition-view">
-              <div style={styles.subviewHeader}>
-                <span className="eyebrow-label">ENGINEERING CONSOLE</span>
-                <h2 style={styles.subviewTitle}>System & Mobile Preferences</h2>
-              </div>
+              {activeTab === 'settings' && (
+                <div style={styles.subviewPadding} className="tab-transition-view dadaist-shell">
+                  <div style={styles.subviewHeader} className="dadaist-subview-header">
+                    <span className="eyebrow-label">PERSONAL SETTINGS</span>
+                    <h1 style={styles.subviewTitle}>More</h1>
+                    <p className="page-description">Adjust how AURA Assist speaks, feels, and connects on this device.</p>
+                  </div>
 
-              <div style={styles.settingsCard}>
+                  <div style={styles.settingsCard} className="dadaist-settings-card">
+                <div className="profile-card">
+                  <div className="profile-card__icon" aria-hidden="true"><ShieldCheck size={20} /></div>
+                  <div>
+                    <strong>{role === 'caregiver' ? 'Caregiver view' : 'Wearer view'}</strong>
+                    <span>{role === 'caregiver' ? 'Monitoring Demo wearer' : 'Your personal safety view'}</span>
+                  </div>
+                  <button className="button button--secondary" type="button" onClick={handleChangeRole}>Change role</button>
+                </div>
                 {/* Replay Splash Screen Action */}
                 <div style={styles.settingsRow}>
                   <div>
                     <span style={styles.settingLabel}>App Launch Animation</span>
-                    <span style={styles.settingSub}>Replay the bootloader logo animation and diagnostic sequence</span>
+                    <span style={styles.settingSub}>Replay the AURA Assist introduction</span>
                   </div>
                   <button
                     onClick={() => {
@@ -536,7 +691,7 @@ export const App: React.FC = () => {
                 <div style={styles.settingsRow}>
                   <div>
                     <span style={styles.settingLabel}>Android Mobile APK</span>
-                    <span style={styles.settingSub}>Direct install package: AIoT-Assistive-Suite.apk (v1.0 • 4.3 MB)</span>
+                    <span style={styles.settingSub}>Direct install package for the Android demo build</span>
                   </div>
                   <a
                     href="/AIoT-Assistive-Suite.apk"
@@ -557,8 +712,8 @@ export const App: React.FC = () => {
                 {/* Sound Effects Toggle */}
                 <div style={styles.settingsRow}>
                   <div>
-                    <span style={styles.settingLabel}>Futuristic Touch Audio</span>
-                    <span style={styles.settingSub}>Synthetic high-tech acoustic feedback on button presses & tabs</span>
+                    <span style={styles.settingLabel}>Touch sounds</span>
+                    <span style={styles.settingSub}>Short sounds for navigation and important actions</span>
                   </div>
                   <button
                     onClick={handleToggleSound}
@@ -582,8 +737,8 @@ export const App: React.FC = () => {
                 {/* Vibration Haptics Toggle */}
                 <div style={styles.settingsRow}>
                   <div>
-                    <span style={styles.settingLabel}>Device Vibration Haptics</span>
-                    <span style={styles.settingSub}>Tactile motor pulses on taps, SOS, and fall triggers (Web Vibration API)</span>
+                    <span style={styles.settingLabel}>Vibration feedback</span>
+                    <span style={styles.settingSub}>Tactile feedback for taps, SOS, and safety alerts</span>
                   </div>
                   <button
                     onClick={handleToggleHaptics}
@@ -598,8 +753,8 @@ export const App: React.FC = () => {
                 {/* Voice Assist Toggle */}
                 <div style={styles.settingsRow}>
                   <div>
-                    <span style={styles.settingLabel}>Clinical Voice Assist</span>
-                    <span style={styles.settingSub}>Text-To-Speech spoken voice alerts for visual impairment & fall warnings</span>
+                    <span style={styles.settingLabel}>Spoken safety alerts</span>
+                    <span style={styles.settingSub}>Read important safety updates aloud when enabled</span>
                   </div>
                   <button
                     onClick={handleToggleVoice}
@@ -614,7 +769,7 @@ export const App: React.FC = () => {
                 {/* Server Host Config */}
                 <div style={styles.settingsRow}>
                   <div>
-                    <span style={styles.settingLabel}>Bridge Endpoint Target</span>
+                    <span style={styles.settingLabel}>Connection target</span>
                     <span style={styles.settingSub}>{apiBase}</span>
                   </div>
                   <button
@@ -629,63 +784,102 @@ export const App: React.FC = () => {
                 {/* MQTT Broker Info */}
                 <div style={styles.settingsRow}>
                   <div>
-                    <span style={styles.settingLabel}>Mosquitto MQTT Secure Broker</span>
-                    <span style={styles.settingSub}>test.mosquitto.org:8883 (AES-256-GCM + MQTTS TLS QoS 1/0)</span>
+                    <span style={styles.settingLabel}>AURA Bridge status</span>
+                    <span style={styles.settingSub}>{isConnected ? 'The dashboard can reach the local bridge.' : 'The dashboard is waiting for the local bridge.'}</span>
                   </div>
-                  <span style={styles.statusPill}>MQTTS TLS Active</span>
+                  <span style={styles.statusPill}>{isConnected ? 'Connected' : 'Offline'}</span>
                 </div>
 
-                {/* Emergency Contact */}
+                {/* Native emergency contact */}
                 <div style={styles.settingsRow}>
                   <div>
-                    <span style={styles.settingLabel}>Primary Caregiver Emergency Contact</span>
-                    <span style={styles.settingSub}>Dr. R. Sharma: +91-98765-43210</span>
+                    <span style={styles.settingLabel}>Emergency contact</span>
+                    <span style={styles.settingSub}>
+                      {emergencyContact
+                        ? `${emergencyContact.name} • ${emergencyContact.phone}`
+                        : 'Required for automatic native SMS and call actions.'}
+                    </span>
                   </div>
                   <button
-                    onClick={() => {
-                      mobileUx.triggerHaptic('success');
-                      mobileUx.playTone('tap');
-                      addToast('Emergency Dispatch', 'SMS & Voice beacon verified with cellular relay.', 'success');
-                    }}
+                    onClick={() => setIsContactEditorOpen(true)}
                     className="pill-btn-ghost"
                     style={styles.settingActionPill}
                   >
-                    Verify Dispatch
+                    {emergencyContact ? 'Edit contact' : 'Set contact'}
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </main>
 
-      {/* 5. Floating Microphone Action Button (Electric Azure #38BDF8) */}
-      <button
-        onClick={() => {
-          mobileUx.triggerHaptic('medium');
-          mobileUx.playTone('tap');
-          setIsChatOpen(true);
-        }}
-        style={styles.floatingMicButton}
-        className="live-pulse-blue"
-        title="Open Aura AI Voice & Sensor Fusion Assistant"
-      >
-        <Mic size={24} color="#070D1E" />
-      </button>
+                {import.meta.env.DEV && (
+                  <>
+                    <div className="settings-divider" />
+                    <div style={styles.settingsRow}>
+                      <div>
+                        <span style={styles.settingLabel}>Developer tools</span>
+                        <span style={styles.settingSub}>Show simulator controls and encrypted transport diagnostics for local testing only.</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = !showDeveloperTools;
+                          setShowDeveloperTools(next);
+                          localStorage.setItem('AURA_DEVELOPER_TOOLS', String(next));
+                        }}
+                        className={showDeveloperTools ? 'pill-btn-primary' : 'pill-btn-ghost'}
+                        style={styles.settingActionPill}
+                      >
+                        {showDeveloperTools ? 'Shown' : 'Hidden'}
+                      </button>
+                    </div>
+                    {showDeveloperTools && (
+                      <>
+                        <SecurityPayloadInspector logs={securityLogs} />
+                        <div className="settings-divider" />
+                        <div className="developer-tools">
+                          <span className="eyebrow-label">LOCAL DEMO ONLY</span>
+                          <h2>Simulation tools</h2>
+                          <p>These controls create synthetic device events. They are not available in production builds.</p>
+                          <SimulatorControlBar onTriggerAction={handleTriggerAction} />
+                        </div>
+                      </>
+                    )}
+                  </>
+                 )}
+               </div>
+             </div>
+             )}
+             </div>
+           </main>
 
-      {/* 6. Bottom Tab Pill Navigation */}
-      <BottomNavBar activeTab={activeTab} onChangeTab={setActiveTab} />
+          <button
+            onClick={() => {
+              mobileUx.triggerHaptic('medium');
+              mobileUx.playTone('tap');
+              setIsChatOpen(true);
+            }}
+             style={styles.floatingMicButton}
+             className="live-pulse-blue dadaist-float-mic"
+            title="Ask AURA Guide"
+            aria-label="Open AURA Guide voice assistant"
+            type="button"
+          >
+            <Mic size={24} color="#07131A" />
+          </button>
 
-      {/* 7. Voice-Enabled AI Chatbot & Sensor Fusion Modal Drawer */}
-      <AIChatDrawer
-        isOpen={isChatOpen}
-        onClose={() => {
-          mobileUx.triggerHaptic('light');
-          setIsChatOpen(false);
-        }}
-        messages={chatMessages}
-        onSendMessage={handleSendChatMessage}
-      />
+          <BottomNavBar activeTab={activeTab} onChangeTab={setActiveTab} role={role} />
+
+          <AIChatDrawer
+            isOpen={isChatOpen}
+            onClose={() => {
+              mobileUx.triggerHaptic('light');
+              setIsChatOpen(false);
+            }}
+            messages={chatMessages}
+            onSendMessage={handleSendChatMessage}
+            role={role}
+            wearerName="Demo wearer"
+          />
+        </>
+      )}
     </div>
   );
 };
@@ -695,7 +889,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as const,
     minHeight: '100vh',
-    backgroundColor: '#0B132B', // Deep Sapphire Canvas
+    backgroundColor: '#08131A',
     color: '#FFFFFF',
     position: 'relative' as const,
   },
@@ -723,10 +917,10 @@ const styles = {
     margin: '4px 0 0 0',
   },
   settingsCard: {
-    backgroundColor: '#0F1D38',
+    backgroundColor: '#10232A',
     borderRadius: '24px',
     padding: '20px 16px',
-    border: '1px solid rgba(56, 189, 248, 0.15)',
+    border: '1px solid rgba(91, 200, 232, 0.18)',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '16px',

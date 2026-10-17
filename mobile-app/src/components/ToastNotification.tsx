@@ -17,7 +17,7 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({ toasts, on
   if (toasts.length === 0) return null;
 
   return (
-    <div style={styles.toastContainer}>
+    <div style={styles.toastContainer} className="dadaist-toast-stack">
       {toasts.map((toast) => {
         const isAlert = toast.type === 'alert';
         const isWarning = toast.type === 'warning';
@@ -34,14 +34,16 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({ toasts, on
         const accentColor = isAlert ? '#EF4444' : isWarning ? '#FFCD48' : '#38BDF8';
 
         return (
-          <div
-            key={toast.id}
+           <div
+             key={toast.id}
             style={{
               ...styles.toastCard,
               borderColor,
             }}
-            className="toast-slide-down"
-          >
+             className="toast-slide-down dadaist-toast"
+             role={isAlert ? 'alert' : 'status'}
+             aria-live={isAlert ? 'assertive' : 'polite'}
+            >
             <div style={{ ...styles.iconBadge, backgroundColor: `${accentColor}18`, borderColor }}>
               {isAlert || isWarning ? (
                 <AlertTriangle size={16} color={accentColor} />

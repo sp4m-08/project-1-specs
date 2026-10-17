@@ -14,11 +14,11 @@ interface BootPhase {
 }
 
 const BOOT_PHASES: BootPhase[] = [
-  { threshold: 18, label: 'INITIALIZING CRYPTOGRAPHIC ENCLAVE', sub: 'Mounting AES-256-GCM authenticated cipher context...' },
-  { threshold: 42, label: 'CONNECTING SMART GLASSES (ESP32-CAM)', sub: 'Establishing 20 FPS YOLO neural vision pipeline...' },
-  { threshold: 68, label: 'LINKING SMART CANE & SMART BAND', sub: 'Synchronizing ultrasonic proximity & MAX30100 PPG stream...' },
-  { threshold: 88, label: 'SECURING WEBSOCKET TELEMETRY BRIDGE', sub: 'Handshaking MQTT message broker on port 4000...' },
-  { threshold: 100, label: 'SYSTEM VERIFIED & OPERATIONAL', sub: 'Algorithm 2 dual-device fall fusion engine online.' },
+  { threshold: 18, label: 'PREPARING AURA ASSIST', sub: 'Loading your safety preferences...' },
+  { threshold: 42, label: 'CONNECTING SMART GLASSES', sub: 'Preparing path awareness...' },
+  { threshold: 68, label: 'LINKING SMART CANE & SMART BAND', sub: 'Checking proximity and health signals...' },
+  { threshold: 88, label: 'CONNECTING AURA BRIDGE', sub: 'Starting the local telemetry connection...' },
+  { threshold: 100, label: 'AURA ASSIST IS READY', sub: 'Your connected safety view is ready.' },
 ];
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish, serverHost }) => {
@@ -81,6 +81,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish, serverHost
 
   return (
     <div
+      className="dadaist-splash grunge-splash"
       style={{
         ...styles.splashOverlay,
         opacity: isFadingOut ? 0 : 1,
@@ -89,41 +90,41 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish, serverHost
       }}
     >
       {/* Background Ambient Glow & Grid Accents */}
-      <div style={styles.ambientGlow} />
-      <div style={styles.gridOverlay} />
+      <div style={styles.ambientGlow} className="grunge-splash__grain" />
+      <div style={styles.gridOverlay} className="grunge-splash__grid" />
 
-      <div style={styles.contentContainer}>
+      <div style={styles.contentContainer} className="grunge-splash__content">
         {/* Top Eyebrow Tag */}
-        <div style={styles.topBadge}>
-          <div style={styles.topDot} className="live-pulse-blue" />
-          <span style={styles.topBadgeText}>AURA MEDICAL-GRADE IOT MESH</span>
+        <div style={styles.topBadge} className="grunge-splash__masthead">
+          <div style={styles.topDot} className="grunge-splash__signal" />
+           <span style={styles.topBadgeText}>AURA ASSIST • DEMO MODE</span>
         </div>
 
         {/* Central Glowing Holographic Emblem */}
-        <div style={styles.emblemContainer}>
-          <div style={styles.radarRingOuter} />
-          <div style={styles.radarRingMiddle} />
-          <div style={styles.radarSweep} />
+        <div style={styles.emblemContainer} className="grunge-splash__scanner">
+          <div style={styles.radarRingOuter} className="grunge-splash__scanner-ring grunge-splash__scanner-ring--outer" />
+          <div style={styles.radarRingMiddle} className="grunge-splash__scanner-ring grunge-splash__scanner-ring--middle" />
+          <div style={styles.radarSweep} className="grunge-splash__scanner-sweep" />
 
-          <div style={styles.logoCard}>
-            <div style={styles.logoIconInner}>
+          <div style={styles.logoCard} className="grunge-splash__logo">
+            <div style={styles.logoIconInner} className="grunge-splash__logo-mark">
               <Zap size={38} color="#38BDF8" style={{ filter: 'drop-shadow(0 0 12px #38BDF8)' }} />
             </div>
           </div>
         </div>
 
         {/* App Title & Tagline */}
-        <div style={styles.titleSection}>
-          <h1 style={styles.appName}>AURA <span style={styles.accentText}>AIoT</span></h1>
-          <p style={styles.appSubtitle}>Smart Assistive Wearables Ecosystem</p>
+        <div style={styles.titleSection} className="grunge-splash__title-block">
+           <h1 style={styles.appName} className="grunge-splash__title">AURA <span style={styles.accentText}>ASSIST</span></h1>
+           <p style={styles.appSubtitle} className="grunge-splash__subtitle">Connected safety for everyday movement</p>
         </div>
 
         {/* Hardware Nodes Live Sync Status Indicators */}
-        <div style={styles.nodePillsCluster}>
+        <div style={styles.nodePillsCluster} className="grunge-splash__nodes">
           <div style={{
             ...styles.nodePill,
             borderColor: progress >= 40 ? 'rgba(56, 189, 248, 0.4)' : 'rgba(255, 205, 72, 0.25)',
-          }}>
+          }} className="grunge-splash__node">
             <Eye size={13} color={progress >= 40 ? '#38BDF8' : '#FFCD48'} />
             <span style={styles.nodePillLabel}>Glasses</span>
             <span style={{
@@ -137,7 +138,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish, serverHost
           <div style={{
             ...styles.nodePill,
             borderColor: progress >= 65 ? 'rgba(56, 189, 248, 0.4)' : 'rgba(255, 205, 72, 0.25)',
-          }}>
+          }} className="grunge-splash__node">
             <Navigation size={13} color={progress >= 65 ? '#38BDF8' : '#FFCD48'} />
             <span style={styles.nodePillLabel}>Cane</span>
             <span style={{
@@ -151,7 +152,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish, serverHost
           <div style={{
             ...styles.nodePill,
             borderColor: progress >= 80 ? 'rgba(56, 189, 248, 0.4)' : 'rgba(255, 205, 72, 0.25)',
-          }}>
+          }} className="grunge-splash__node">
             <Activity size={13} color={progress >= 80 ? '#38BDF8' : '#FFCD48'} />
             <span style={styles.nodePillLabel}>Band</span>
             <span style={{
@@ -164,36 +165,37 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish, serverHost
         </div>
 
         {/* Loading Progress Section */}
-        <div style={styles.loaderSection}>
-          <div style={styles.progressHeaderRow}>
-            <span style={styles.phaseLabel}>{currentPhase.label}</span>
-            <span style={styles.percentText}>{Math.round(progress)}%</span>
+        <div style={styles.loaderSection} className="grunge-splash__loader">
+          <div style={styles.progressHeaderRow} className="grunge-splash__loader-head">
+            <span style={styles.phaseLabel} className="grunge-splash__phase">{currentPhase.label}</span>
+            <span style={styles.percentText} className="grunge-splash__percent">{Math.round(progress)}%</span>
           </div>
 
           {/* Progress Bar Track */}
-          <div style={styles.progressTrack}>
+          <div style={styles.progressTrack} className="grunge-splash__track">
             <div
               style={{
                 ...styles.progressBar,
                 width: `${progress}%`,
               }}
+              className="grunge-splash__progress"
             >
-              <div style={styles.progressBarGlow} />
+              <div style={styles.progressBarGlow} className="grunge-splash__progress-glint" />
             </div>
           </div>
 
-          <p style={styles.phaseSub}>{currentPhase.sub}</p>
+          <p style={styles.phaseSub} className="grunge-splash__phase-sub">{currentPhase.sub}</p>
         </div>
 
         {/* Bottom Actions & Version Info */}
-        <div style={styles.footerRow}>
-          <button onClick={handleSkip} style={styles.skipBtn}>
+        <div style={styles.footerRow} className="grunge-splash__footer">
+          <button onClick={handleSkip} style={styles.skipBtn} className="grunge-splash__skip">
             <span>Enter Dashboard</span>
             <ArrowRight size={13} style={{ marginLeft: 6 }} />
           </button>
 
-          <span style={styles.versionNote}>
-            Target: {serverHost}:4000 • BLE Mesh v2.4
+          <span style={styles.versionNote} className="grunge-splash__version">
+             AURA Bridge target: {serverHost}:4000 • Simulation-first build
           </span>
         </div>
       </div>

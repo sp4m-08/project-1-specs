@@ -1,4 +1,6 @@
-# Secure AIoT Assistive Wearable Suite
+# AURA Assist
+
+Secure tri-wearable assistive safety platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform: Android & Web](https://img.shields.io/badge/Platform-Android%20%7C%20Web-38BDF8.svg)](https://capacitorjs.com/)
@@ -6,7 +8,9 @@
 [![AI: Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini%203.5-FBBC04.svg)](https://ai.google.dev/)
 [![MQTT: TLS 1.3](https://img.shields.io/badge/MQTT-Mosquitto%20%2F%20HiveMQ-FF6B6B.svg)](https://mqtt.org/)
 
-An enterprise-grade, cyber-physical Assistive IoT (AIoT) ecosystem designed for visually impaired and elderly individuals. The system integrates three synchronized wearable nodes (**Smart Glasses**, **Smart Cane**, **Smart Band**) communicating over **AES-256-GCM authenticated encryption**, cross-device fall fusion (**Algorithm 2**), real-time 3D obstacle mapping, and an intelligent **Google Gemini-powered conversational clinical agent** with full voice input/output.
+AURA Assist is a simulation-first assistive safety platform for visually impaired and elderly users and the people who support them. It brings together three connected wearables — **Smart Glasses**, **Smart Cane**, and **Smart Band** — with path awareness, health snapshots, cross-device fall verification, caregiver workflows, and the **AURA Guide** voice assistant.
+
+The technical project name is **AIoT Assistive Suite**. MQTT, AES-GCM, sensor-fusion, and simulator details are documented for engineering and research use; they are not the primary user-facing language.
 
 ---
 
@@ -100,14 +104,14 @@ Single-IMU fall detection suffers from high false-alarm rates (e.g., dropping a 
 
 ---
 
-## 🧠 Google Gemini AI Assistant with Multimodal Voice
+## 🧠 AURA Guide Voice Assistant
 
-The Aura AI Assistant ([`server/src/chatbot/auraAiAssistant.ts`](file:///c:/Users/rimpi/Documents/projects/project-1-specs/server/src/chatbot/auraAiAssistant.ts)) provides intelligent clinical analysis powered by **Google Gemini 3.5 Flash Lite**:
+The AURA Guide assistant ([`server/src/chatbot/auraAiAssistant.ts`](server/src/chatbot/auraAiAssistant.ts)) provides telemetry-grounded assistive guidance. When configured, it can use Google Gemini; otherwise it uses a local deterministic fallback:
 
 - **Real-Time Telemetry Grounding**: Every prompt is automatically contextualized with the latest encrypted vitals (HR, $\text{SpO}_2$, battery), obstacle distances, and fall verification states.
 - **Voice Input (Speech-to-Text)**: Users tap the microphone icon in the chat drawer to speak queries naturally via `webkitSpeechRecognition`.
 - **Voice Output (Text-to-Speech)**: Responses are vocalized using Android's native `android.speech.tts.TextToSpeech` engine inside the APK (via `@capacitor-community/text-to-speech`) and Web Speech API in desktop browsers.
-- **Offline Fallback Engine**: If internet or Gemini API access is interrupted, the assistant automatically switches to a local deterministic rule-based engine, ensuring zero service disruption.
+- **Offline Fallback Engine**: If internet or Gemini API access is interrupted, the assistant switches to a local deterministic rule-based engine for the demo.
 
 ---
 

@@ -8,7 +8,7 @@ interface SimulatorControlBarProps {
 export const SimulatorControlBar: React.FC<SimulatorControlBarProps> = ({ onTriggerAction }) => {
   return (
     <div style={styles.outerWrapper}>
-      <div className="deep-abyss-card" style={styles.card}>
+      <div className="deep-abyss-card dadaist-sim-panel" style={styles.card}>
         <div style={styles.header}>
           <div style={styles.iconBox}>
             <Cpu size={16} color="#38BDF8" />

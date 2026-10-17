@@ -1,20 +1,22 @@
 import React from 'react';
-import { LayoutGrid, Layers, ShieldCheck, Settings } from 'lucide-react';
+import { LayoutGrid, Map, Bell, MoreHorizontal } from 'lucide-react';
 import { mobileUx } from '../utils/haptics';
+import { UserRole } from '../types/telemetry';
 
-export type ActiveTab = 'dashboard' | 'spatial' | 'security' | 'settings';
+export type ActiveTab = 'dashboard' | 'spatial' | 'alerts' | 'settings';
 
 interface BottomNavBarProps {
   activeTab: ActiveTab;
   onChangeTab: (tab: ActiveTab) => void;
+  role: UserRole;
 }
 
-export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onChangeTab }) => {
+export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onChangeTab, role }) => {
   const tabs: { id: ActiveTab; label: string; icon: React.FC<{ size: number; color?: string }> }[] = [
-    { id: 'dashboard', label: 'Console', icon: LayoutGrid },
-    { id: 'spatial', label: '3D Radar', icon: Layers },
-    { id: 'security', label: 'AES Pipeline', icon: ShieldCheck },
-    { id: 'settings', label: 'Config', icon: Settings },
+    { id: 'dashboard', label: role === 'caregiver' ? 'Overview' : 'Home', icon: LayoutGrid },
+    { id: 'spatial', label: 'Path', icon: Map },
+    { id: 'alerts', label: 'Alerts', icon: Bell },
+    { id: 'settings', label: 'More', icon: MoreHorizontal },
   ];
 
   const handleTabClick = (tabId: ActiveTab) => {
@@ -26,8 +28,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onChangeT
   };
 
   return (
-    <nav style={styles.navContainer}>
-      <div style={styles.pillTrack}>
+    <nav style={styles.navContainer} className="dadaist-bottom-nav" aria-label="Primary navigation">
+      <div style={styles.pillTrack} className="dadaist-bottom-track">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
@@ -36,6 +38,11 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onChangeT
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
+              aria-current={isActive ? 'page' : undefined}
+              aria-label={tab.label}
+              type="button"
+              className="dadaist-bottom-tab"
+              data-active={isActive}
               style={{
                 ...styles.tabPill,
                 backgroundColor: isActive ? '#38BDF8' : 'transparent',

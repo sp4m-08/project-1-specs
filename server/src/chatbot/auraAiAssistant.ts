@@ -1,6 +1,6 @@
 /**
- * Aura Health AI Assistant - Sensor Fusion & Historical Analysis Module
- * Powered by Google Gemini (gemini-3.5-flash-lite) with Live Tri-Wearable Telemetry Grounding
+ * AURA Guide - Sensor Fusion & Assistive Safety Analysis Module
+ * Optionally powered by Google Gemini with live tri-wearable telemetry grounding
  */
 
 import { GoogleGenAI } from '@google/genai';
@@ -32,19 +32,19 @@ export class AuraAiAssistant {
       try {
         this.aiClient = new GoogleGenAI({ apiKey });
         this.modelName = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
-        console.log(`[Aura AI] Google Gemini Client initialized successfully with model: ${this.modelName}`);
+         console.log(`[AURA Guide] Google Gemini client initialized with model: ${this.modelName}`);
       } catch (err) {
-        console.error('[Aura AI] Error initializing Google Gemini Client:', err);
+         console.error('[AURA Guide] Error initializing Google Gemini client:', err);
       }
     } else {
-      console.warn('[Aura AI] No GEMINI_API_KEY found in environment. Operating in offline rule-based mode.');
+       console.warn('[AURA Guide] No GEMINI_API_KEY found. Operating in offline rule-based mode.');
     }
 
     // Initial welcome message
     this.history.push({
       id: 'msg_init',
       sender: 'assistant',
-      text: "Hello! I am Aura AI, your tri-wearable sensor fusion assistant powered by Google Gemini. I analyze encrypted telemetry from your Smart Glasses, Smart Cane, and Smart Band in real-time. Ask me anything about vitals, fall alerts, obstacle maps, or safety status!",
+      text: "Hello! I am AURA Guide. I can summarize the latest safety, path, and health updates from your Smart Glasses, Smart Cane, and Smart Band. Ask me about current safety, alerts, or the path ahead.",
       timestamp: Date.now(),
       modelUsed: this.aiClient ? this.modelName : 'offline-rules',
     });
@@ -62,34 +62,42 @@ export class AuraAiAssistant {
     };
     this.history.push(userMsg);
 
-    const currentHr = latestTelemetry.band?.heart_rate || latestTelemetry.cane?.heart_rate || 72;
-    const currentSpO2 = latestTelemetry.band?.spo2 || latestTelemetry.cane?.spo2 || 98;
-    const obstacleDist = latestTelemetry.specs?.distance_m || 0.85;
+    const hasVitals = latestTelemetry.band?.heart_rate !== undefined || latestTelemetry.cane?.heart_rate !== undefined;
+    const currentHr = latestTelemetry.band?.heart_rate ?? latestTelemetry.cane?.heart_rate ?? 0;
+    const currentSpO2 = latestTelemetry.band?.spo2 ?? latestTelemetry.cane?.spo2 ?? 0;
+    const hasPathReading = latestTelemetry.specs?.distance_m !== undefined;
+    const obstacleDist = latestTelemetry.specs?.distance_m ?? 0;
 
     // Determine relevant interactive visual card based on topic
     let card: ChatMessage['dataCard'] = undefined;
     const p = prompt.toLowerCase();
     if (p.includes('heart') || p.includes('bpm') || p.includes('pulse') || p.includes('vital') || p.includes('spo2')) {
-      card = {
-        title: 'Real-time Vitals & 1-Hour Trend',
-        type: 'hr_trend',
-        averageHr: Math.round((currentHr + 74) / 2),
-        currentVitals: { hr: currentHr, spo2: currentSpO2 },
-        hrTrend1h: [
-          { time: '-60m', value: 71 },
-          { time: '-45m', value: 73 },
-          { time: '-30m', value: 72 },
-          { time: '-15m', value: Math.max(currentHr, 85) },
-          { time: '-5m', value: 74 },
-          { time: 'Now', value: currentHr },
-        ],
-        correlatedEvent: `Live vitals: ${currentHr} BPM, SpO2 ${currentSpO2}%. Cross-verified across Smart Band & Cane.`,
-      };
+      card = hasVitals
+        ? {
+            title: 'Health snapshot & demo trend',
+            type: 'hr_trend',
+            averageHr: Math.round((currentHr + 74) / 2),
+            currentVitals: { hr: currentHr, spo2: currentSpO2 },
+            hrTrend1h: [
+              { time: '-60m', value: 71 },
+              { time: '-45m', value: 73 },
+              { time: '-30m', value: 72 },
+              { time: '-15m', value: Math.max(currentHr, 85) },
+              { time: '-5m', value: 74 },
+              { time: 'Now', value: currentHr },
+            ],
+            correlatedEvent: `Current snapshot: ${currentHr} BPM, blood oxygen ${currentSpO2}%.`,
+          }
+        : {
+            title: 'Health snapshot unavailable',
+            type: 'hr_trend',
+            correlatedEvent: 'No current health reading is available yet.',
+          };
     } else if (p.includes('alert') || p.includes('safety') || p.includes('fall') || p.includes('danger') || p.includes('sos')) {
       card = {
         title: 'Tri-Wearable Safety & Fusion Overview',
         type: 'safety_summary',
-        currentVitals: { hr: currentHr, spo2: currentSpO2 },
+        ...(hasVitals ? { currentVitals: { hr: currentHr, spo2: currentSpO2 } } : {}),
         correlatedEvent: latestTelemetry.activeAlert && latestTelemetry.activeAlert.status !== 'IDLE'
           ? `ACTIVE ALERT: ${latestTelemetry.activeAlert.message}`
           : 'Dual IMU cross-verification active: 0 unverified fall flags. System healthy.',
@@ -98,21 +106,23 @@ export class AuraAiAssistant {
       card = {
         title: 'Glasses Perception & 3D Spatial Summary',
         type: 'obstacle_summary',
-        correlatedEvent: `Nearest ultrasonic obstacle: ${obstacleDist}m. Vision detector active.`,
+        correlatedEvent: hasPathReading ? `Nearest detected object: ${obstacleDist}m ahead.` : 'No current path reading is available yet.',
       };
     }
 
     let replyText = '';
     let modelUsed = 'offline-rules';
+    const vitalsSummary = hasVitals ? `Heart rate: ${currentHr} BPM, blood oxygen: ${currentSpO2}%` : 'No current health reading available';
+    const pathSummary = hasPathReading ? `${obstacleDist}m ahead` : 'No current path reading available';
 
     // Attempt Gemini inference if client is initialized
     if (this.aiClient) {
       try {
-        const systemPrompt = `You are "Aura AI", an intelligent, empathetic, and expert clinical and assistive AI assistant embedded into an Assistive IoT (AIoT) Tri-Wearable Suite for elderly and visually impaired individuals.
+        const systemPrompt = `You are "AURA Guide", a warm and careful assistive safety assistant embedded into a tri-wearable safety platform for elderly and visually impaired individuals.
 You analyze real-time encrypted sensor streams from three wearable devices:
-1. Smart Glasses (ESP32-CAM + ultrasonic sensor): Distance ahead: ${obstacleDist}m, camera vision/currency detection: active.
+1. Smart Glasses (ESP32-CAM + ultrasonic sensor): Distance ahead: ${pathSummary}, camera vision/currency detection: active.
 2. Smart Cane (ESP8266 + MPU6050 + ultrasonic): Steps: ${latestTelemetry.cane?.steps || 0}, Obstacle: ${latestTelemetry.cane?.distance_cm || 'Clear'}.
-3. Smart Band (ESP8266 + MAX30102 + MPU6050): Heart Rate: ${currentHr} BPM, SpO2: ${currentSpO2}%, Fall flag: ${latestTelemetry.band?.fall_flag ?? 0}, Steps: ${latestTelemetry.band?.steps || 0}, Battery: ${latestTelemetry.band?.battery || 95}%.
+3. Smart Band (ESP8266 + MAX30102 + MPU6050): ${vitalsSummary}, Fall flag: ${latestTelemetry.band?.fall_flag ?? 0}, Steps: ${latestTelemetry.band?.steps || 0}, Battery: ${latestTelemetry.band?.battery ?? 'unavailable'}.
 
 System Security & Fusion State:
 - Encryption: AES-256-GCM hardware-accelerated end-to-end encryption with anti-replay monotonic counters.
@@ -121,7 +131,8 @@ System Security & Fusion State:
 Guidelines:
 - Answer the user's question clearly, warmly, and concisely (2 to 4 sentences) suitable for voice read-aloud on a mobile screen.
 - Directly reference the live telemetry values when relevant to ground your answer in reality.
-- If they ask about emergencies, falls, or SOS, provide immediate clear guidance.`;
+        - If they ask about emergencies, falls, or SOS, provide immediate clear guidance.
+        - Do not present yourself as a clinician or diagnose a medical condition. Describe readings as a health snapshot and recommend contacting a qualified professional for medical concerns.`;
 
         const recentHistory = this.history
           .slice(-6)
@@ -140,24 +151,30 @@ Guidelines:
           modelUsed = `Google Gemini (${this.modelName})`;
         }
       } catch (geminiError: any) {
-        console.error('[Aura AI] Gemini generation error, falling back to local engine:', geminiError?.message || geminiError);
+         console.error('[AURA Guide] Gemini generation error, falling back to local engine:', geminiError?.message || geminiError);
       }
     }
 
     // Fallback if Gemini is unavailable or failed
     if (!replyText) {
       if (p.includes('heart rate') || p.includes('father') || p.includes('vitals') || p.includes('hr')) {
-        replyText = `Your father's heart rate is currently ${currentHr} BPM with SpO2 at ${currentSpO2}%. Readings over the last hour show stable vitals with no dangerous cardiac anomalies detected.`;
+        replyText = hasVitals
+          ? `The current heart rate is ${currentHr} BPM with blood oxygen at ${currentSpO2}%. The available demo readings show no immediate critical alert.`
+          : 'No current health reading is available yet. Check that the Smart Band is connected and try again.';
       } else if (p.includes('alert') || p.includes('safety') || p.includes('fall') || p.includes('danger')) {
         if (latestTelemetry.activeAlert && latestTelemetry.activeAlert.status !== 'IDLE') {
           replyText = `ACTIVE ALERT: ${latestTelemetry.activeAlert.message}`;
         } else {
-          replyText = `All systems clear. Both candidate fall sensors report stable acceleration (amag ≈ 9.8 m/s²). Cross-device fall fusion status is VERIFIED and SpO2 level is healthy at ${currentSpO2}%.`;
+          replyText = hasVitals
+            ? `No active safety alert is reported. The current health snapshot is ${currentHr} BPM and ${currentSpO2}% blood oxygen.`
+            : 'No active safety alert is reported, but current health data is not available yet.';
         }
       } else if (p.includes('obstacle') || p.includes('currency') || p.includes('glasses') || p.includes('camera')) {
-        replyText = `Smart Glasses stream is active. Nearest obstacle detected at ${obstacleDist}m ahead. YOLO vision detector identified a clear path with currency detector standing by.`;
+        replyText = hasPathReading
+          ? `Smart Glasses path awareness is active. The nearest detected object is ${obstacleDist}m ahead.`
+          : 'No current path reading is available yet. Check that the Smart Glasses are connected and try again.';
       } else {
-        replyText = `I am monitoring all 3 wearables: Smart Glasses (Obstacle at ${obstacleDist}m), Smart Cane (Active), and Smart Band (HR ${currentHr} BPM, SpO2 ${currentSpO2}%). AES-256-GCM encryption is active and verified over MQTT. How else can I assist?`;
+         replyText = `I am monitoring the three AURA wearables: Smart Glasses (${hasPathReading ? `object at ${obstacleDist}m` : 'waiting for a path reading'}), Smart Cane (active), and Smart Band (${hasVitals ? `heart rate ${currentHr} BPM` : 'waiting for health data'}). What would you like to check next?`;
       }
       modelUsed = 'Local Rule-Based Engine (Fallback)';
     }

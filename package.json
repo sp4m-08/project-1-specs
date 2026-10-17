@@ -1,8 +1,8 @@
 {
-  "name": "aiot-assistive-suite",
+  "name": "aura-assist",
   "version": "1.0.0",
   "private": true,
-  "description": "Secure AIoT Assistive Wearables System",
+  "description": "AURA Assist secure tri-wearable safety platform",
   "scripts": {
     "install:all": "npm --prefix server install && npm --prefix mobile-app install",
     "server": "npm --prefix server run dev",

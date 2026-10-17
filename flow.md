@@ -241,5 +241,59 @@
    - Recompiled production bundle with `npm run build`.
    - Synchronized native assets via `npx cap sync`.
    - Rebuilt debug APK via Gradle with JDK 21 (`BUILD SUCCESSFUL in 13s`).
-   - Updated standalone APK [`AIoT-Assistive-Suite-debug.apk`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/AIoT-Assistive-Suite-debug.apk) (4.46 MB) in workspace root.
+    - Updated standalone APK [`AIoT-Assistive-Suite-debug.apk`](file:///c:/Users/Saunok%20Roy/Documents/projects/final-year/AIoT-Assistive-Suite-debug.apk) (4.46 MB) in workspace root.
+
+---
+
+### [Prompt 21] - 2026-10-17
+**User Request**: Implement the UI/UX and naming recommendations, add caregiver/wearer role selection, and maintain a compact root `context.md` for future agents.
+
+#### Actions & Changes Made:
+1. Added [`context.md`](context.md) with canonical AURA Assist identity, AURA Guide/AURA Bridge naming, actual React/Vite/Capacitor architecture, role behavior, runtime commands, protocol invariants, known caveats, maintenance rules, and verification ledger.
+2. Added local demo role selection through `RoleSelectionScreen.tsx`; persisted `AURA_USER_ROLE` supports Wearer and Caregiver views. This is UX state, not authentication or authorization.
+3. Reworked the active client toward a safety-first experience: role-aware dashboard copy, Home/Overview, Path, Alerts, and More navigation, persistent in-memory health/fall alerts, accessible path summaries, and developer-only simulator/security tools.
+4. Replaced fabricated default vitals in the active health card with explicit no-data states and removed primary user-facing medical-grade, clinical, and dispatch claims.
+5. Renamed the user-facing app to **AURA Assist**, the voice assistant to **AURA Guide**, and the backend display name to **AURA Bridge** while preserving the Android application ID `com.aiot.assistivesuite`.
+6. Updated the active AI assistant fallback and prompt copy to avoid implying clinical diagnosis or real emergency dispatch.
+7. Verification passed: mobile build, server build, Capacitor sync, Android unit tests, Android debug assembly, local simulator status/dual-fall/cancel smoke check, and `git diff --check`. The existing Vite large-chunk and Gradle `flatDir` warnings remain.
+
+---
+
+### [Prompt 22] - 2026-10-17
+**Continuation**: Resume AURA Assist from the role-aware redesign checkpoint without discarding uncommitted work.
+
+#### Actions & Changes Made:
+1. Inspected the root `context.md`, latest `flow.md` entry, repository status, and complete uncommitted diff. The redesign remains uncommitted on `main`; no unrelated work was reset or discarded.
+2. Fixed the fall false-alarm path so the modal's cancel/acknowledge action invokes the existing bridge dismissal endpoint instead of only hiding the modal locally.
+3. Reworded runtime fall, health, SOS, and voice feedback so the simulation does not claim that an external call, message, caregiver notification, or emergency dispatch occurred.
+4. Replaced the machine-specific native default server IP with a portable `localhost` default; the existing host configuration remains available for phone-over-Wi-Fi use.
+5. Rebuilt and synchronized the dashboard web assets, then verified the bridge's simulated dual-fall and dismissal flow.
+
+#### Verification:
+- `server/npm run build` — passed.
+- `mobile-app/npm run build` — passed; the existing Vite large-chunk warning remains.
+- `mobile-app/npm run cap:sync` — passed.
+- Android `gradlew.bat test` with JDK 21 — passed; existing template tests only.
+- Android `gradlew.bat assembleDebug` with JDK 21 — passed; debug APK rebuilt from the synchronized web assets.
+- Local simulator smoke check with `ENABLE_SIMULATOR=true` on port `4400` — `/api/status` ready, `DUAL_FALL` reached `HIGH_CONFIDENCE_ALERT`, `/api/fall/dismiss` and final status returned `IDLE`.
+- `git diff --check` — passed.
+
+---
+
+### [Prompt 23] - 2026-10-17
+**User Request**: Require first-run emergency contact setup for the wearer and automatically send a native Android SMS and phone call when the fall response countdown expires without being silenced.
+
+#### Actions & Changes Made:
+1. Added `EmergencyContactSetup.tsx`, local `AURA_EMERGENCY_CONTACT` storage, validation, and required onboarding after role selection when no contact exists.
+2. Added the Capacitor `EmergencyActions` bridge with Android `CALL_PHONE` and `SEND_SMS` runtime permissions, direct native SMS dispatch, and native phone call initiation.
+3. Wired `ESCALATED_TO_CAREGIVER` events from WebSocket/HTTP state into an idempotent native emergency action flow; the contact remains device-local and is not sent to AURA Bridge.
+4. Updated the fall escalation copy and More settings contact editor. Updated `context.md` with native integration caveats and verification records.
+
+#### Verification:
+- `mobile-app/npm run build` — passed; the existing Vite large-chunk warning remains.
+- `server/npm run build` — passed.
+- `mobile-app/npm run cap:sync` — passed.
+- Android `gradlew.bat test` with Android Studio JBR — passed; custom EmergencyActions plugin compiled.
+- Android `gradlew.bat assembleDebug` with Android Studio JBR — passed; debug APK rebuilt with native call/SMS permissions.
+- `git diff --check` — passed.
 

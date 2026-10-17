@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Navigation, Activity, Radio, Clock, AlertCircle } from 'lucide-react';
-import { SpecsTelemetry, SpecsVision, CaneTelemetry, BandTelemetry, DeviceLastSeen } from '../types/telemetry';
+import { SpecsTelemetry, SpecsVision, CaneTelemetry, BandTelemetry, DeviceLastSeen, UserRole } from '../types/telemetry';
 
 interface DeviceStatusGridProps {
+  role?: UserRole;
   specs?: SpecsTelemetry;
   specsVision?: SpecsVision;
   cane?: CaneTelemetry;
@@ -18,6 +19,7 @@ interface DeviceStatusGridProps {
  * - Displays exact "Last Published" timestamp & elapsed time on every device card
  */
 export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
+  role = 'caregiver',
   specs,
   specsVision,
   cane,
@@ -114,13 +116,13 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
     : 'Stable / Normal';
 
   return (
-    <section style={styles.sectionWrapper}>
-      <div style={styles.sectionHeaderRow}>
+    <section style={styles.sectionWrapper} className="collage-devices">
+      <div style={styles.sectionHeaderRow} className="collage-devices__header">
         <div>
-          <span className="eyebrow-label">TRI-WEARABLE PLATFORM • AES-256-GCM TOPOLOGY</span>
-          <h2 style={styles.sectionTitle}>Connected Hardware Nodes</h2>
+          <span className="eyebrow-label">AURA WEARABLES</span>
+          <h2 style={styles.sectionTitle}>Wearable status</h2>
         </div>
-        <div style={{
+        <div className="collage-devices__node-count" style={{
           ...styles.nodeCountPill,
           borderColor: onlineCount > 0 ? 'rgba(56, 189, 248, 0.35)' : 'rgba(140, 162, 194, 0.25)',
         }}>
@@ -135,35 +137,35 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
             ...styles.nodeCountText,
             color: onlineCount > 0 ? '#38BDF8' : '#8CA2C2',
           }}>
-            {onlineCount} / 3 Nodes Online
+            {onlineCount} / 3 {role === 'wearer' ? 'devices ready' : 'wearables connected'}
           </span>
         </div>
       </div>
 
-      <div style={styles.grid}>
+      <div style={styles.grid} className="collage-devices__grid">
         {/* TILE 1: Smart Glasses (ESP32-CAM) */}
-        <div style={{
+        <div className="collage-device-tile collage-device-tile--glasses" style={{
           ...styles.tile,
           borderColor: isSpecsOnline ? 'rgba(56, 189, 248, 0.4)' : 'rgba(255, 255, 255, 0.08)',
           boxShadow: isSpecsOnline ? '0 4px 20px rgba(56, 189, 248, 0.12)' : '0 4px 16px rgba(0, 0, 0, 0.25)',
           opacity: isSpecsOnline ? 1 : 0.88,
         }}>
-          <div style={styles.tileTop}>
+            <div style={styles.tileTop} className="collage-device-tile__top">
             <div style={{
               ...styles.iconBox,
               borderColor: isSpecsOnline ? 'rgba(56, 189, 248, 0.4)' : 'rgba(140, 162, 194, 0.2)',
-            }}>
+            }} className="icon-box">
               <Eye size={20} color={isSpecsOnline ? '#38BDF8' : '#8CA2C2'} />
             </div>
-            <div style={styles.titleStack}>
-              <span className="eyebrow-label">NODE 01 • ESP32-CAM</span>
+            <div style={styles.titleStack} className="title-stack">
+              <span className="eyebrow-label">HEAD-WORN AWARENESS</span>
               <h3 style={styles.deviceHeading}>Smart Glasses</h3>
             </div>
             <div style={{
               ...styles.statusPill,
               borderColor: isSpecsOnline ? '#38BDF8' : 'rgba(140, 162, 194, 0.25)',
               backgroundColor: isSpecsOnline ? 'rgba(56, 189, 248, 0.12)' : '#0B132B',
-            }}>
+            }} className="status-pill">
               <div
                 style={{
                   ...styles.greenDot,
@@ -180,21 +182,21 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
             </div>
           </div>
 
-          <div style={styles.metricsBox}>
+          <div style={styles.metricsBox} className="metrics-box">
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>YOLO VISION INFERENCE</span>
+                <span style={styles.metricLabel}>OBJECT AWARENESS</span>
               <div style={styles.valueRow}>
                 <span style={{
                   ...styles.metricValue,
                   color: !isSpecsOnline && !visionLabel ? '#8CA2C2' : visionCategory === 'currency' ? '#FFCD48' : '#38BDF8',
                 }}>
-                  {visionLabel || (isSpecsOnline ? 'Continuous Perception' : '-- (No Vision Stream)')}
+                  {visionLabel || (isSpecsOnline ? 'Monitoring path' : 'No data yet')}
                 </span>
               </div>
             </div>
 
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>OBSTACLE DETECTED DISTANCE</span>
+                <span style={styles.metricLabel}>NEAREST OBJECT</span>
               <div style={styles.valueRow}>
                 <span style={{
                   ...styles.metricValueLarge,
@@ -203,23 +205,23 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
                   {specsDist !== undefined ? `${specsDist.toFixed(2)} m` : '--'}
                 </span>
                 <span style={styles.unitSub}>
-                  {specsDist !== undefined ? 'Clearance' : 'Awaiting Sonar'}
+                  {specsDist !== undefined ? 'Distance ahead' : 'No distance yet'}
                 </span>
               </div>
             </div>
 
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>HEAD POSE VECTOR</span>
+                <span style={styles.metricLabel}>HEAD ORIENTATION</span>
               <span style={styles.monoSub}>
                 {specs?.yaw_deg !== undefined && specs?.pitch_deg !== undefined
                   ? `Yaw: ${specs.yaw_deg.toFixed(1)}° • Pitch: ${specs.pitch_deg.toFixed(1)}°`
-                  : '-- (Awaiting IMU Vector)'}
+                  : 'No orientation yet'}
               </span>
             </div>
           </div>
 
           {/* Last Published Timestamp Footer */}
-          <div style={styles.cardFooter}>
+          <div style={styles.cardFooter} className="card-footer">
             {isSpecsOnline ? (
               <Radio size={13} color="#38BDF8" />
             ) : (
@@ -232,28 +234,28 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
         </div>
 
         {/* TILE 2: Smart Cane (ESP8266) */}
-        <div style={{
+        <div className="collage-device-tile collage-device-tile--cane" style={{
           ...styles.tile,
           borderColor: isCaneOnline ? 'rgba(56, 189, 248, 0.4)' : 'rgba(255, 255, 255, 0.08)',
           boxShadow: isCaneOnline ? '0 4px 20px rgba(56, 189, 248, 0.12)' : '0 4px 16px rgba(0, 0, 0, 0.25)',
           opacity: isCaneOnline ? 1 : 0.88,
         }}>
-          <div style={styles.tileTop}>
+            <div style={styles.tileTop} className="collage-device-tile__top">
             <div style={{
               ...styles.iconBox,
               borderColor: isCaneOnline ? 'rgba(56, 189, 248, 0.4)' : 'rgba(140, 162, 194, 0.2)',
-            }}>
+            }} className="icon-box">
               <Navigation size={20} color={isCaneOnline ? '#38BDF8' : '#8CA2C2'} />
             </div>
-            <div style={styles.titleStack}>
-              <span className="eyebrow-label">NODE 02 • ESP8266</span>
+            <div style={styles.titleStack} className="title-stack">
+              <span className="eyebrow-label">GROUND AWARENESS</span>
               <h3 style={styles.deviceHeading}>Smart Cane</h3>
             </div>
             <div style={{
               ...styles.statusPill,
               borderColor: isCaneOnline ? '#38BDF8' : 'rgba(140, 162, 194, 0.25)',
               backgroundColor: isCaneOnline ? 'rgba(56, 189, 248, 0.12)' : '#0B132B',
-            }}>
+            }} className="status-pill">
               <div
                 style={{
                   ...styles.greenDot,
@@ -270,9 +272,9 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
             </div>
           </div>
 
-          <div style={styles.metricsBox}>
+          <div style={styles.metricsBox} className="metrics-box">
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>ULTRASONIC RANGING</span>
+                <span style={styles.metricLabel}>GROUND DISTANCE</span>
               <div style={styles.valueRow}>
                 <span style={{
                   ...styles.metricValueLarge,
@@ -288,13 +290,13 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
                     ? '⚠️ Buzzer Triggered'
                     : caneDist !== undefined
                     ? 'Active Scanning'
-                    : 'Awaiting Ultrasonic'}
+                    : 'No distance yet'}
                 </span>
               </div>
             </div>
 
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>IMU IMPACT ACCEL</span>
+                <span style={styles.metricLabel}>IMPACT MONITORING</span>
               <div style={styles.valueRow}>
                 <span style={{
                   ...styles.metricValue,
@@ -302,24 +304,24 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
                 }}>
                   {cane?.amag !== undefined ? `${cane.amag.toFixed(2)} m/s²` : '--'}
                 </span>
-                {caneFallFlag && (
-                  <span style={{ ...styles.unitSub, color: '#FFCD48' }}>Flag F_cane=1</span>
+                    {caneFallFlag && (
+                    <span style={{ ...styles.unitSub, color: '#FFCD48' }}>Impact detected</span>
                 )}
               </div>
             </div>
 
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>HANDLE VITALS CHECK</span>
+                <span style={styles.metricLabel}>HANDLE HEALTH CHECK</span>
               <span style={styles.monoSub}>
                 {cane?.heart_rate !== undefined && cane?.spo2 !== undefined
                   ? `HR: ${cane.heart_rate} BPM • SpO2: ${cane.spo2}%`
-                  : '-- (Awaiting Sensor)'}
+                  : 'No health data yet'}
               </span>
             </div>
           </div>
 
           {/* Last Published Timestamp Footer */}
-          <div style={styles.cardFooter}>
+          <div style={styles.cardFooter} className="card-footer">
             {isCaneOnline ? (
               <Radio size={13} color="#38BDF8" />
             ) : (
@@ -332,7 +334,7 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
         </div>
 
         {/* TILE 3: Smart Band (ESP8266) */}
-        <div style={{
+        <div className="collage-device-tile collage-device-tile--band" style={{
           ...styles.tile,
           borderColor: isBandOnline
             ? isVitalsCritical || isVitalsWarning
@@ -344,15 +346,15 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
             : '0 4px 16px rgba(0, 0, 0, 0.25)',
           opacity: isBandOnline ? 1 : 0.88,
         }}>
-          <div style={styles.tileTop}>
+            <div style={styles.tileTop} className="collage-device-tile__top">
             <div style={{
               ...styles.iconBox,
               borderColor: isBandOnline ? 'rgba(56, 189, 248, 0.4)' : 'rgba(140, 162, 194, 0.2)',
-            }}>
+            }} className="icon-box">
               <Activity size={20} color={isBandOnline ? '#38BDF8' : '#8CA2C2'} />
             </div>
-            <div style={styles.titleStack}>
-              <span className="eyebrow-label">NODE 03 • ESP8266</span>
+            <div style={styles.titleStack} className="title-stack">
+              <span className="eyebrow-label">WRIST HEALTH</span>
               <h3 style={styles.deviceHeading}>Smart Band</h3>
             </div>
             <div style={{
@@ -363,7 +365,7 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
                   : '#38BDF8'
                 : 'rgba(140, 162, 194, 0.25)',
               backgroundColor: isBandOnline ? 'rgba(56, 189, 248, 0.12)' : '#0B132B',
-            }}>
+            }} className="status-pill">
               <div
                 style={{
                   ...styles.greenDot,
@@ -388,9 +390,9 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
             </div>
           </div>
 
-          <div style={styles.metricsBox}>
+          <div style={styles.metricsBox} className="metrics-box">
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>PATIENT BIOMETRICS</span>
+                <span style={styles.metricLabel}>HEALTH SNAPSHOT</span>
               <div style={styles.valueRow}>
                 <span style={{
                   ...styles.metricValueLarge,
@@ -399,35 +401,35 @@ export const DeviceStatusGrid: React.FC<DeviceStatusGridProps> = ({
                   {bandHr !== undefined ? `${bandHr} BPM` : '--'}
                 </span>
                 <span style={styles.unitSub}>
-                  {bandSpO2 !== undefined ? `• ${bandSpO2}% SpO2` : 'Awaiting Optical Vitals'}
+                  {bandSpO2 !== undefined ? `• ${bandSpO2}% blood oxygen` : 'No health data yet'}
                 </span>
               </div>
             </div>
 
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>BAROMETRIC SENSING</span>
+                <span style={styles.metricLabel}>ENVIRONMENT</span>
               <div style={styles.valueRow}>
                 <span style={styles.metricValue}>
                   {band?.altitude_m !== undefined ? `${band.altitude_m} m` : '--'}
                 </span>
                 <span style={styles.unitSub}>
-                  {band?.pressure_hpa !== undefined ? `${band.pressure_hpa} hPa` : 'Awaiting BMP280'}
+                  {band?.pressure_hpa !== undefined ? `${band.pressure_hpa} hPa` : 'No environment data yet'}
                 </span>
               </div>
             </div>
 
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>MOTION & STEP TELEMETRY</span>
+                <span style={styles.metricLabel}>MOVEMENT</span>
               <span style={styles.monoSub}>
                 {band?.step_count !== undefined && band?.amag !== undefined
                   ? `${band.step_count} Steps • Accel: ${band.amag.toFixed(2)} m/s²`
-                  : '-- (Awaiting Motion Accel)'}
+                  : 'No movement data yet'}
               </span>
             </div>
           </div>
 
           {/* Last Published Timestamp Footer */}
-          <div style={styles.cardFooter}>
+          <div style={styles.cardFooter} className="card-footer">
             {isBandOnline ? (
               <Radio size={13} color="#38BDF8" />
             ) : (

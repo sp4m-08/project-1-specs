@@ -23,6 +23,18 @@ export interface DeviceLastSeen {
   band: number | null;
 }
 
+export type UserRole = 'wearer' | 'caregiver';
+
+export interface SafetyAlert {
+  id: string;
+  level: 'info' | 'warning' | 'critical';
+  title: string;
+  message: string;
+  timestamp: number;
+  source: 'fall' | 'health' | 'system';
+  acknowledged?: boolean;
+}
+
 export interface SpecsTelemetry {
   dev_id: string;
   timestamp: number;

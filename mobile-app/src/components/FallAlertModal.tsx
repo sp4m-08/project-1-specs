@@ -1,26 +1,28 @@
 import React from 'react';
-import { AlertTriangle, ShieldAlert, PhoneCall, Clock, X, CheckCircle, Bell } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, PhoneCall, X, CheckCircle } from 'lucide-react';
 import { FallAlertState } from '../types/telemetry';
 
 interface FallAlertModalProps {
   alertState: FallAlertState | null;
   isOpen: boolean;
   onCancelAlert: () => void;
+  onAcknowledgeAlert?: () => void;
   onCloseModal?: () => void;
 }
 
 /**
- * FallAlertModal — Two-Tier Cross-Device Fall Verification & Emergency Alert System
- * Implements Algorithm 2 from the IEEE paper:
+ * FallAlertModal — Two-tier cross-device fall verification and caregiver review.
+ * Implements the repository's fall fusion rules:
  * - Tier 1: Single Device Trigger (F_cane=1 XOR F_band=1):
  *   Low-confidence warning initiating a 30-second SOS confirm/cancel response window.
  * - Tier 2: Dual Device Agreement (|t_c - t_b| <= \Delta t = 3.0s):
- *   Critical high-confidence fall event immediately dispatched to emergency caregivers.
+ *   High-confidence fall event is surfaced for caregiver review; external dispatch is not implemented.
  */
 export const FallAlertModal: React.FC<FallAlertModalProps> = ({
   alertState,
   isOpen,
   onCancelAlert,
+  onAcknowledgeAlert,
   onCloseModal,
 }) => {
   if (!isOpen || !alertState || alertState.status === 'IDLE' || alertState.status === 'CANCELLED_BY_USER') return null;
@@ -42,12 +44,14 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
   return (
     <div
       style={styles.modalOverlay}
-      onClick={handleClose}
+      className="dadaist-fall-overlay"
       role="dialog"
       aria-modal="true"
+      aria-labelledby="fall-alert-title"
     >
       <div
         style={styles.modalContainer}
+        className="dadaist-fall-modal"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Badge */}
@@ -60,21 +64,22 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
             )}
             <div>
               <span className="eyebrow-label" style={{ color: '#FFCD48' }}>
-                ALGORITHM 2 • CROSS-DEVICE SENSOR FUSION
+                 SAFETY ALERT • TWO-DEVICE CHECK
               </span>
-              <h2 style={styles.alertHeadline}>
-                {isHighAlert || isEscalated ? 'Critical Fall Event Escalation' : 'Single-Device Fall Warning'}
+               <h2 id="fall-alert-title" style={styles.alertHeadline}>
+                 {isHighAlert || isEscalated ? 'Fall likely confirmed' : 'Possible fall detected'}
               </h2>
             </div>
           </div>
 
           <div style={styles.headerRightActions}>
-            <div style={styles.confidencePill}>
-              <span>{isHighAlert ? 'High Confidence (Dual)' : 'Low Confidence (Single)'}</span>
+            <div style={styles.confidencePill} className="confidence-pill">
+               <span>{isHighAlert || isEscalated ? 'Two-device confirmation' : 'Needs confirmation'}</span>
             </div>
             <button
               onClick={handleClose}
               style={styles.closeIconButton}
+              className="close-icon-button"
               title="Close and return to dashboard"
               aria-label="Close"
             >
@@ -84,67 +89,67 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
         </div>
 
         {/* Dynamic Detail Card */}
-        <div style={styles.detailCard}>
+        <div style={styles.detailCard} className="detail-card">
           <p style={styles.alertMessageText}>
             {alertState.message ||
               (isHighAlert
-                ? 'Simultaneous impact detected on Smart Cane & Smart Band within Δt = 3.0s. High confidence fall verified.'
-                : 'Isolated impact detected on a single wearable device. Awaiting user SOS verification.')}
+                 ? `The Smart Cane and Smart Band detected impacts within ${((alertState.timeDiffMs ?? 3000) / 1000).toFixed(1)} seconds.`
+                 : 'One wearable detected an impact. Check that the wearer is okay before the response window ends.')}
           </p>
 
           <div style={styles.fusionMetricsGrid}>
             <div style={styles.metricItem}>
               <span style={styles.metricLabel}>TEMPORAL WINDOW</span>
-              <span style={styles.metricVal}>Δt = 3.00s</span>
+               <span style={styles.metricVal}>{alertState.timeDiffMs !== undefined ? `Δt = ${(alertState.timeDiffMs / 1000).toFixed(2)}s` : 'Waiting for match'}</span>
             </div>
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>CANE FLAG (F_CANE)</span>
+               <span style={styles.metricLabel}>SMART CANE SIGNAL</span>
               <span style={{ ...styles.metricVal, color: isHighAlert ? '#FFCD48' : '#38BDF8' }}>
-                {isHighAlert ? '1 (Active)' : 'Checked'}
+                 {alertState.caneEvent ? 'Impact detected' : 'No matching event'}
               </span>
             </div>
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>BAND FLAG (F_BAND)</span>
+                <span style={styles.metricLabel}>SMART BAND SIGNAL</span>
               <span style={{ ...styles.metricVal, color: isHighAlert ? '#FFCD48' : '#38BDF8' }}>
-                {isHighAlert ? '1 (Active)' : 'Checked'}
+                 {alertState.bandEvent ? 'Impact detected' : 'No matching event'}
               </span>
             </div>
             <div style={styles.metricItem}>
-              <span style={styles.metricLabel}>AES-256 INTEGRITY</span>
-              <span style={{ ...styles.metricVal, color: '#38BDF8' }}>Verified Tag</span>
+               <span style={styles.metricLabel}>STATUS</span>
+               <span style={{ ...styles.metricVal, color: '#38BDF8' }}>{isHighAlert || isEscalated ? 'Review needed' : 'Response window'}</span>
             </div>
           </div>
         </div>
 
         {/* Tier 1: 30-Second Countdown Window with Cancel Action */}
         {isLowWarning && (
-          <div style={styles.countdownSection}>
-            <div style={styles.timerCircle}>
-              <span style={styles.secondsDisplay}>{remainingSeconds}s</span>
-              <span style={styles.timerSublabel}>RESPONSE TIME</span>
+          <div style={styles.countdownSection} className="countdown-section">
+            <div style={styles.timerCircle} className="timer-circle">
+              <span style={styles.secondsDisplay} className="seconds-display">{remainingSeconds}s</span>
+              <span style={styles.timerSublabel} className="timer-sublabel">RESPONSE TIME</span>
             </div>
 
             <div style={styles.countdownExplainer}>
-              <span style={styles.explainerBold}>30-Second SOS Response Active (T_resp = 30s)</span>
+                 <span style={styles.explainerBold}>Response window active</span>
               <span style={styles.explainerMuted}>
-                If false alarm (e.g. dropped cane), press the button below or tap the physical Band SOS button to dismiss.
+                 If this was not a fall, confirm that the wearer is okay to stop the alert.
               </span>
             </div>
 
             <div style={styles.buttonCluster}>
               <button
-                onClick={onCancelAlert}
-                className="pill-btn-primary"
-                style={styles.cancelPillButton}
+                onClick={onAcknowledgeAlert || handleClose}
+                 style={styles.cancelPillButton}
+                 className="pill-btn-primary cancel-pill-button"
               >
                 <CheckCircle size={18} color="#0B132B" style={{ marginRight: 8 }} />
-                <span>Cancel False Alarm (SOS Dismiss)</span>
+                 <span>I’m okay — cancel alert</span>
               </button>
 
               <button
                 onClick={handleClose}
-                className="pill-btn-dark"
-                style={styles.backToDashboardButton}
+                 style={styles.backToDashboardButton}
+                 className="pill-btn-dark back-dashboard-button"
               >
                 <X size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
                 <span>Back to Dashboard</span>
@@ -156,14 +161,16 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
         {/* Tier 2: High Confidence Escalation to Caregiver */}
         {(isHighAlert || isEscalated) && (
           <div style={styles.highAlertSection}>
-            <div style={styles.emergencyCallBanner}>
+            <div style={styles.emergencyCallBanner} className="emergency-call-banner">
               <div style={styles.phoneIconBox}>
                 <PhoneCall size={22} color="#FFFFFF" />
               </div>
               <div>
-                <span style={styles.emergencyCallTitle}>EMERGENCY DISPATCH INITIATED</span>
-                <span style={styles.emergencyCallDesc}>
-                  Automated SMS & Caregiver Call Sent: +91-98765-43210 (Lat: 12.9716° N, Lon: 77.5946° E)
+                   <span style={styles.emergencyCallTitle}>{isEscalated ? 'EMERGENCY CONTACT ACTIONS' : 'CAREGIVER RESPONSE WORKFLOW'}</span>
+                   <span style={styles.emergencyCallDesc}>
+                   {isEscalated
+                     ? 'The response window expired. AURA Assist is attempting the configured native SMS and phone call from this Android device.'
+                     : 'High-confidence fall detected. Review the alert and follow your configured care plan.'}
                 </span>
               </div>
             </div>
@@ -171,19 +178,19 @@ export const FallAlertModal: React.FC<FallAlertModalProps> = ({
             <div style={styles.actionButtonsCluster}>
               <button
                 onClick={onCancelAlert}
-                className="pill-btn-ghost"
-                style={styles.overridePill}
+                 style={styles.overridePill}
+                 className="pill-btn-ghost override-pill"
               >
-                <span>Caregiver Arrived (Acknowledge Alert)</span>
+                 <span>Acknowledge alert</span>
               </button>
 
               <button
                 onClick={handleClose}
-                className="pill-btn-dark"
-                style={styles.dismissPill}
+                 style={styles.dismissPill}
+                 className="pill-btn-dark dismiss-pill"
               >
                 <X size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
-                <span>Close Window</span>
+                 <span>Close details</span>
               </button>
             </div>
           </div>

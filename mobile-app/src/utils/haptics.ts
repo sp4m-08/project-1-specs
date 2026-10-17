@@ -148,7 +148,7 @@ class MobileUxManager {
   }
 
   /**
-   * Spoken Voice Assist for Visually Impaired / Clinical Alerts
+   * Spoken safety assistance for visually impaired users and important alerts
    * Uses native Android TextToSpeech service in APK, and Web Speech API in browser
    */
   public async speak(text: string) {
