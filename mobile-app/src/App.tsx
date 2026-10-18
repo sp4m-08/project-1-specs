@@ -624,6 +624,7 @@ export const App: React.FC = () => {
                   activeAlert={activeAlert}
                   onCancelAlert={() => handleTriggerAction('SOS_CANCEL')}
                   onTriggerAction={handleTriggerAction}
+                  emergencyContact={emergencyContact}
                   onOpenChat={() => {
                     mobileUx.triggerHaptic('light');
                     mobileUx.playTone('tap');

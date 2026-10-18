@@ -3844,3 +3844,23 @@ textarea:focus-visible {
     animation: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   EMERGENCY CALL BUTTON
+   ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 4px 16px rgba(229, 62, 62, 0.45); }
+  50% { box-shadow: 0 4px 28px rgba(229, 62, 62, 0.75), 0 0 0 8px rgba(229, 62, 62, 0.15); }
+}
+
+.emergency-call-btn:hover {
+  background-color: rgba(240, 80, 80, 0.2) !important;
+  border-color: rgba(240, 80, 80, 0.7) !important;
+  transform: translateY(-1px);
+}
+
+.emergency-call-btn:active {
+  transform: scale(0.98);
+  background-color: rgba(240, 80, 80, 0.3) !important;
+}

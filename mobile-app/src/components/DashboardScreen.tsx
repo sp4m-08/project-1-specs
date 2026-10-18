@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Zap, Bell, RefreshCw, ShieldCheck, HeartHandshake } from 'lucide-react';
+import { Zap, Bell, RefreshCw, ShieldCheck, HeartHandshake, PhoneCall } from 'lucide-react';
 import { DeviceStatusGrid } from './DeviceStatusGrid';
 import { VitalsCard } from './VitalsCard';
 import { FallAlertModal } from './FallAlertModal';
@@ -13,6 +13,7 @@ import {
   DeviceLastSeen,
   UserRole,
 } from '../types/telemetry';
+import { EmergencyContact } from '../types/emergency';
 
 interface DashboardScreenProps {
   role: UserRole;
@@ -31,6 +32,7 @@ interface DashboardScreenProps {
   onTriggerAction: (action: string, value?: any) => void;
   onOpenChat: () => void;
   onOpenAlerts?: () => void;
+  emergencyContact?: EmergencyContact | null;
 }
 
 /**
@@ -58,6 +60,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onTriggerAction,
   onOpenChat,
   onOpenAlerts,
+  emergencyContact,
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [dismissedAlertId, setDismissedAlertId] = useState<string | null>(null);
@@ -108,6 +111,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     mobileUx.playTone('sos');
     mobileUx.speak('Emergency S.O.S alert activated.');
     onTriggerAction('SOS_PRESS');
+  };
+
+  const handleEmergencyCall = () => {
+    if (!emergencyContact?.phone) return;
+    mobileUx.triggerHaptic('sos');
+    mobileUx.playTone('sos');
+    mobileUx.speak(`Calling ${emergencyContact.name} now.`);
+    window.open(`tel:${emergencyContact.phone}`, '_system');
   };
 
   return (
@@ -239,6 +250,27 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </section>
       )}
 
+      {/* Emergency Call Caretaker Button */}
+      {emergencyContact && (
+        <section style={styles.emergencyCallSection}>
+          <button
+            onClick={handleEmergencyCall}
+            type="button"
+            style={styles.emergencyCallBtn}
+            className="emergency-call-btn"
+          >
+            <div style={styles.emergencyCallIcon}>
+              <PhoneCall size={22} color="#FFFFFF" />
+            </div>
+            <div style={styles.emergencyCallText}>
+              <span style={styles.emergencyCallTitle}>Emergency Call</span>
+              <span style={styles.emergencyCallSub}>Call {emergencyContact.name} — {emergencyContact.phone}</span>
+            </div>
+            <span style={styles.emergencyCallArrow}>→</span>
+          </button>
+        </section>
+      )}
+
       {/* 4. Connected Devices Row (3 Tiles on #0e1a19, 60px radius) */}
         <DeviceStatusGrid
           role={role}
@@ -282,6 +314,60 @@ const styles = {
     backgroundColor: '#0B132B',
     color: '#FFFFFF',
     minHeight: '100%',
+  },
+  emergencyCallSection: {
+    padding: '0 clamp(14px, 4vw, 20px) 8px clamp(14px, 4vw, 20px)',
+  },
+  emergencyCallBtn: {
+    display: 'flex',
+    flexDirection: 'row' as const,
+    alignItems: 'center',
+    gap: '14px',
+    width: '100%',
+    padding: '16px 20px',
+    borderRadius: '20px',
+    border: '1.5px solid rgba(240, 80, 80, 0.5)',
+    backgroundColor: 'rgba(240, 80, 80, 0.12)',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    touchAction: 'manipulation' as const,
+  },
+  emergencyCallIcon: {
+    width: '48px',
+    height: '48px',
+    borderRadius: '50%',
+    backgroundColor: '#E53E3E',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    boxShadow: '0 4px 16px rgba(229, 62, 62, 0.45)',
+    animation: 'pulse-ring 2s ease-in-out infinite',
+  },
+  emergencyCallText: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '2px',
+    flex: 1,
+    textAlign: 'left' as const,
+  },
+  emergencyCallTitle: {
+    fontSize: '15px',
+    fontWeight: '700' as const,
+    color: '#F06B6B',
+    letterSpacing: '0.2px',
+  },
+  emergencyCallSub: {
+    fontSize: '12px',
+    fontWeight: '400' as const,
+    color: '#C2A8A8',
+    letterSpacing: '0.1px',
+  },
+  emergencyCallArrow: {
+    fontSize: '20px',
+    color: '#F06B6B',
+    fontWeight: '600' as const,
+    flexShrink: 0,
   },
   headerBar: {
     display: 'flex',
